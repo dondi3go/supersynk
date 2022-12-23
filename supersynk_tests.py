@@ -125,7 +125,9 @@ def run_channel_tests():
     start_time = time.time()
     for i in range(0, request_count):
         channel.get_input_validation(body)
-        channel.update(body, 0.0)
+        current_time = 0.01 * i
+        channel.update(body, current_time)
+        channel.remove_disconnected_hosts(current_time, 10.0)
     elapsed_time = time.time() - start_time
     update_per_sec = request_count / elapsed_time
     print(str(int(update_per_sec)) + " updates per sec")

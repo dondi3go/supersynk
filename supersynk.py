@@ -1,4 +1,5 @@
 import json
+import threading
 
 # Node class :
 # - host_key is unique among hosts
@@ -108,6 +109,7 @@ class Channel:
     def __init__(self):
         self.nodes = Nodes()
         self.host_last_update = {} # host_key:str > time:float
+        self.lock = threading.Lock()
 
     INPUT_IS_VALID = 0
     INPUT_IS_NONE = 1
@@ -181,11 +183,14 @@ class Channel:
         except:
             return "[]"
 
-        # Update
-        strings = self.nodes.batch_update(host_key, node_keys, node_vals)
+        # ------------------------------------------------------------------
+        with self.lock:
+            # Update
+            strings = self.nodes.batch_update(host_key, node_keys, node_vals)
 
-        # Store the update time of host_key
-        self.host_last_update[host_key] = time
+            # Store the update time of host_key
+            self.host_last_update[host_key] = time
+        # ------------------------------------------------------------------
 
         # Convert to output (warning : code duplication)
         result = "["
@@ -206,8 +211,11 @@ class Channel:
 
     # Get a json string with all nodes of all hosts
     def get_all(self) -> str:
-        # Update
-        strings = self.nodes.get_all()
+        # ------------------------------------------------------------------
+        with self.lock :
+            # Update
+            strings = self.nodes.get_all()
+        # ------------------------------------------------------------------
 
         # Convert to output (warning : code duplication)
         result = "["
@@ -228,14 +236,15 @@ class Channel:
 
     # Remove nodes whose last update is older than timeout
     def remove_disconnected_hosts(self, time:float, timeout:float) -> bool :
-        removed_host_keys = []
-        for host_key, last_update in self.host_last_update.items():
+        host_keys = list(self.host_last_update.keys())
+        for host_key in host_keys:
+            last_update = self.host_last_update[host_key]
             if time - last_update > timeout:
-                self.nodes.batch_remove(host_key)
-                removed_host_keys.append(host_key)
-        for host_key in removed_host_keys:
-            self.host_last_update.pop(host_key, None)
-        return len(removed_host_keys) > 0
+                # ------------------------------------------------------------
+                with self.lock :
+                    self.nodes.batch_remove(host_key)
+                    self.host_last_update.pop(host_key, None)
+                # ------------------------------------------------------------
 
 # Channels class :
 # Each channel is identified by a key
