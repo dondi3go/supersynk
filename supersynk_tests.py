@@ -1,4 +1,5 @@
 from supersynk import *
+import time
 
 # Home made test framework (because punk)
 def assert_eq(a, b):
@@ -114,6 +115,20 @@ def run_channel_tests():
     assert_eq("[]", res)
     res = channel.remove_disconnected_hosts(11.0, 1.0)
     assert_eq(False, res)
+
+    print("TEST 7 : performances")
+    node1 = "{\"node_key\":\"head\", \"node_val\":\"a\"}"
+    node2 = "{\"node_key\":\"rhand\", \"node_val\":\"b\"}"
+    node3 = "{\"node_key\":\"lhand\", \"node_val\":\"c\"}"
+    body = "{\"host_key\":\"joe\", \"nodes\":[" + node1 + "," + node2 + "," + node3 + "]}"
+    request_count = 10000
+    start_time = time.time()
+    for i in range(0, request_count):
+        channel.get_input_validation(body)
+        channel.update(body, 0.0)
+    elapsed_time = time.time() - start_time
+    update_per_sec = request_count / elapsed_time
+    print(str(int(update_per_sec)) + " updates per sec")
 
 # Tests for class Channels
 def run_channels_tests():
