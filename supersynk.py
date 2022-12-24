@@ -272,13 +272,15 @@ class Channels:
     def get_all_nodes(self, channel_key:str):
         if not channel_key in self.channels:
             return "[]"
-        
         return self.channels[channel_key].get_all()
 
-    # Clean up all active channels (remove disconnected users)
-    # Close empty channels
-    def clean_up(self, timeout:float):
-        # TODO
+    #
+    def remove_disconnected_hosts(self, time:float, timeout:float):
+        for channel_key in self.channels.keys()
+            self.channels[channel_key].remove_disconnected_hosts()
+
+    #
+    def remove_empty_channels(self):
         pass
 
 if __name__ == '__main__':
