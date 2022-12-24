@@ -120,13 +120,13 @@ def run_channel_tests():
     node1 = "{\"node_key\":\"head\", \"node_val\":\"a\"}"
     node2 = "{\"node_key\":\"rhand\", \"node_val\":\"b\"}"
     node3 = "{\"node_key\":\"lhand\", \"node_val\":\"c\"}"
-    body = "{\"host_key\":\"joe\", \"nodes\":[" + node1 + "," + node2 + "," + node3 + "]}"
+    json_str = "{\"host_key\":\"joe\", \"nodes\":[" + node1 + "," + node2 + "," + node3 + "]}"
     request_count = 10000
     start_time = time.time()
     for i in range(0, request_count):
-        channel.get_input_validation(body)
+        channel.get_input_validation(json_str)
         current_time = 0.01 * i
-        channel.update(body, current_time)
+        channel.update(json_str, current_time)
         channel.remove_disconnected_hosts(current_time, 10.0)
     elapsed_time = time.time() - start_time
     update_per_sec = request_count / elapsed_time
