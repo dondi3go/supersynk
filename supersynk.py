@@ -1,113 +1,13 @@
 import json
 import threading
 
-# Node class :
-# - host_key is unique among hosts
-# - node_key is unique among nodes belonging to same host
-#   nodes belonging to different hosts can have same node_key
-# - node_val is a string
-class Node():
-    def __init__(self, host_key:str, node_key:str, node_val:str):
-        self.host_key = host_key
-        self.node_key = node_key
-        self.node_val = node_val
-
-# A collection of Node objects
-class Nodes:
-    def __init__(self):
-        self.nodes = []
-
-     # Warning : no check on unicity, data model could be corrupted
-    def _create(self, host_key:str, node_key:str, node_val:str) -> Node:
-        node = Node(host_key, node_key, node_val)
-        self.nodes.append(node)
-        return node
-
-    # Warning : no check on presence of node in collection
-    def _remove(self, node:Node):
-        self.nodes.remove(node)
-
-    # Warning : no check on presence of node in collection
-    def _update(self, node:Node, node_val:str):
-        node.node_val = node_val
-
-    # Get a Node from (host_key, node_key), return None if not found (tests)
-    def get(self, host_key:str, node_key:str) -> Node:
-        for node in self.nodes: # perf warning : iterate on all nodes
-            if node.host_key == host_key and node.node_key == node_key:
-                return node
-        return None
-
-    # Return the number of nodes in the collection (tests)
-    def count(self) -> int:
-        return len(self.nodes)
-
-    # The only method to call on production
-    def batch_update(self, host_key:str, node_keys:[], node_vals:[]) -> []:
-        extractA = {} # (node_key > Node) dictionary for nodes belonging to host_key
-        extractB = [] # nodes NOT belonging to host_key
-        
-        # Split nodes in two groups
-        for node in self.nodes: # perf warning : iterate on all nodes
-            if node.host_key == host_key:
-                extractA[node.node_key] = node
-            else:
-                extractB.append(node)
-
-        # Create or Update nodes
-        for i in range(0, len(node_keys)):
-            node_key = node_keys[i]
-            node_val = node_vals[i]
-            if not node_key in extractA:
-                # Create
-                self._create(host_key, node_key, node_val)
-            else:
-                # Update
-                self._update(extractA[node_key], node_val)
-                extractA.pop(node_key) # remove from dictionary
-
-        # Remove nodes not updated during this update
-        for node in extractA.values():
-            # Remove
-            self._remove(node) 
-
-        # Return all other nodes as a list of strings
-        result = []
-        for node in extractB:
-            result.append(node.host_key)
-            result.append(node.node_key)
-            result.append(node.node_val)
-        return result
-
-    # Remove all nodes belonging to one specific host
-    def batch_remove(self, host_key:str):
-        extractA = [] # nodes belonging to host_key
-        
-        # Get nodes belonging to host_key 
-        for node in self.nodes: # perf warning : iterate on all items
-            if node.host_key == host_key:
-                extractA.append(node)
-        
-        # Remove them
-        for node in extractA:
-            self.nodes.remove(node)
-
-    # Get all nodes
-    def get_all(self):
-        result = []
-        for node in self.nodes:
-            result.append(node.host_key)
-            result.append(node.node_key)
-            result.append(node.node_val)
-        return result
-
 # Channel class :
 # A Channel contains data shared by several hosts (nodes)
 # A host updates one channel with its own nodes states, 
 # and gets in return the state of all the nodes in the channel
 class Channel:
     def __init__(self):
-        self.nodes = Nodes()
+        self.clients = {}
         self.host_last_update = {} # host_key:str > time:float
         self.lock = threading.Lock()
 
@@ -168,83 +68,71 @@ class Channel:
     # Take a json string as input
     # Get a json string as output (all nodes except these belonging to host)
     def update(self, json_string:str, time:float) -> str:
-
         # Convert input
         try:
             d = json.loads(json_string) # d is a dictionary
             host_key = d["host_key"]
-            node_keys = []
-            node_vals = []
-
             nodes = d["nodes"]
-            for node in nodes:
-                node_keys.append(node["node_key"])
-                node_vals.append(node["node_val"])
         except:
             return "[]"
+        
+        json_strings = []
 
-        # ------------------------------------------------------------------
-        with self.lock:
-            # Update
-            strings = self.nodes.batch_update(host_key, node_keys, node_vals)
+        # ----------------------------------
+        if len(nodes) > 0: # do not store "[]"
+            # Store the json string of host_key
+            self.clients[host_key] = json_string
 
             # Store the update time of host_key
             self.host_last_update[host_key] = time
-        # ------------------------------------------------------------------
 
-        # Convert to output (warning : code duplication)
+        # Get all other json strings
+        for k in self.clients.keys():
+            if not k == host_key:
+                json_strings.append(self.clients[k])
+        # ----------------------------------
+
         result = "["
-        output_node_count = len(strings) // 3
-        for i in range(0, output_node_count):
-            host_key = strings[3*i]
-            node_key = strings[3*i+1]
-            node_val = strings[3*i+2]
-            result += "{"
-            result += "\"host_key\":\"" + host_key + "\", "
-            result += "\"node_key\":\"" + node_key + "\", "
-            result += "\"node_val\":\"" + node_val + "\""
-            result += "}"
-            if(i<output_node_count-1):
+        count = len(json_strings)
+        for i in range(0, count):
+            result += json_strings[i]
+            if i<count-1:
                 result += ","
         result += "]"
+
         return result
 
     # Get a json string with all nodes of all hosts
     def get_all(self) -> str:
-        # ------------------------------------------------------------------
+        json_strings = []
+        # ----------------------------------
         with self.lock :
-            # Update
-            strings = self.nodes.get_all()
-        # ------------------------------------------------------------------
-
-        # Convert to output (warning : code duplication)
+            json_strings = list(self.clients.values())
+        # ----------------------------------
         result = "["
-        output_node_count = len(strings) // 3
-        for i in range(0, output_node_count):
-            host_key = strings[3*i]
-            node_key = strings[3*i+1]
-            node_val = strings[3*i+2]
-            result += "{"
-            result += "\"host_key\":\"" + host_key + "\", "
-            result += "\"node_key\":\"" + node_key + "\", "
-            result += "\"node_val\":\"" + node_val + "\""
-            result += "}"
-            if(i<output_node_count-1):
+        count = len(json_strings)
+        for i in range(0, count):
+            result += json_strings[i]
+            if i<count-1:
                 result += ","
         result += "]"
+
         return result
 
     # Remove nodes whose last update is older than timeout
     def remove_disconnected_hosts(self, time:float, timeout:float) -> bool :
+        disconnexion_occured = False
         host_keys = list(self.host_last_update.keys())
         for host_key in host_keys:
             last_update = self.host_last_update[host_key]
             if time - last_update > timeout:
                 # ------------------------------------------------------------
                 with self.lock :
-                    self.nodes.batch_remove(host_key)
+                    self.clients.pop(host_key, None)
                     self.host_last_update.pop(host_key, None)
                 # ------------------------------------------------------------
+                disconnexion_occured = True
+        return disconnexion_occured
 
 # Channels class :
 # Each channel is identified by a key
@@ -276,7 +164,7 @@ class Channels:
 
     #
     def remove_disconnected_hosts(self, time:float, timeout:float):
-        for channel_key in self.channels.keys()
+        for channel_key in self.channels.keys():
             self.channels[channel_key].remove_disconnected_hosts()
 
     #
