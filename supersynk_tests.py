@@ -5,53 +5,6 @@ import time
 def assert_eq(a, b):
     print(" ok" if a == b else " KO : " + str(a) + " != " + str(b))
 
-# Tests for class Nodes
-def run_nodes_tests():
-    print("\nTESTS for class Nodes")
-
-    print("TEST 1 : create collection of nodes")
-    nodes = Nodes()
-    assert_eq(0, nodes.count())
-
-    print("TEST 2 : create a new node")
-    nodes._create("ada", "head", "a")
-    assert_eq(1, nodes.count())
-    hn = nodes.get("ada", "head")
-    assert_eq(hn.node_val, "a")
-
-    print("TEST 3 : remove a given node")
-    nodes._remove(hn)
-    assert_eq(0, nodes.count())
-
-    print("TEST 4 : update with no data")
-    nodes.batch_update("pia", [], [])
-    assert_eq(0, nodes.count())
-
-    print("TEST 5 : update with data - create")
-    nodes.batch_update("pia", ["lhand", "rhand"], ["c", "d"])
-    assert_eq(2, nodes.count())
-    hn = nodes.get("pia", "lhand")
-    assert_eq(hn.node_val, "c")
-
-    print("TEST 6 : update with data - update")
-    nodes.batch_update("pia", ["lhand", "rhand"], ["g", "h"])
-    assert_eq(2, nodes.count())
-    hn = nodes.get("pia", "lhand")
-    assert_eq(hn.node_val, "g")
-
-    print("TEST 7 : update with data - remove")
-    nodes.batch_update("pia", ["lhand"], ["i"])
-    assert_eq(1, nodes.count())
-    hn = nodes.get("pia", "lhand")
-    assert_eq(hn.node_val, "i")
-
-    print("TEST 8 : batch remove")
-    assert_eq(1, nodes.count())
-    nodes.batch_update("jon", ["lhand", "rhand"], ["k", "l"])
-    assert_eq(3, nodes.count())
-    nodes.batch_remove("jon")
-    assert_eq(1, nodes.count())
-
 # Tests for class Channel
 def run_channel_tests():
 
@@ -99,12 +52,12 @@ def run_channel_tests():
 
     print("TEST 4 : update with another node (joe) and get ada")
     res = channel.update("{\"host_key\":\"joe\", \"nodes\":[{\"node_key\":\"rhand\", \"node_val\":\"b\"}]}", 0.0)
-    assert_eq("[{\"host_key\":\"ada\", \"node_key\":\"rhand\", \"node_val\":\"a\"}]", res)
+    assert_eq("[{\"host_key\":\"ada\", \"nodes\":[{\"node_key\":\"rhand\", \"node_val\":\"a\"}]}]", res)
     # check result is json
 
     print("TEST 5 : get all nodes")
     res = channel.get_all()
-    expected_res = "[{\"host_key\":\"ada\", \"node_key\":\"rhand\", \"node_val\":\"a\"},{\"host_key\":\"joe\", \"node_key\":\"rhand\", \"node_val\":\"b\"}]"
+    expected_res = "[{\"host_key\":\"ada\", \"nodes\":[{\"node_key\":\"rhand\", \"node_val\":\"a\"}]},{\"host_key\":\"joe\", \"nodes\":[{\"node_key\":\"rhand\", \"node_val\":\"b\"}]}]"
     assert_eq(expected_res, res)
     # check result is json
 
@@ -148,7 +101,7 @@ def run_channels_tests():
 
     print("TEST 3 : get all nodes from existing channel")
     res = channels.get_all_nodes("test")
-    expected_res = "[{\"host_key\":\"joe\", \"node_key\":\"rhand\", \"node_val\":\"b\"}]"
+    expected_res = "[{\"host_key\":\"joe\", \"nodes\":[{\"node_key\":\"rhand\", \"node_val\":\"b\"}]}]"
     assert_eq(expected_res, res)
 
     print("TEST 4 : get all nodes from non-existing channel")
@@ -159,6 +112,5 @@ def run_channels_tests():
 
 if __name__ == '__main__':
     # Tests
-    run_nodes_tests()
     run_channel_tests()
     run_channels_tests()
