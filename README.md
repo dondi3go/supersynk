@@ -2,12 +2,14 @@
 
 Supersynk is punk synchronisation of distributed data
 
-## What is supersynk ?
+## Why supersynk ?
 
-Originaly created to synchronize VR users sharing a common VR environment.
+Sypersynk was originaly created to synchronize VR users sharing a common VR environment.
+
+
 The idea is to make something as simple as possible with as few HTTP requests as possible.
 HTTP is obviously not the most efficient approach for this problem. 
-The solution works yet, is simple, and VR usage has disappered in the meantime 
+The solution works yet, is simple, and VR specific usage has disappered in the meantime 
 (has been displaced to application level), making it usable in other contexts.
 
 ## How does it work ?
