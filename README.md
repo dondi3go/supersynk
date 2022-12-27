@@ -14,7 +14,7 @@ The solution works yet, is simple, and VR specific usage has disappered in the m
 
 ## How does it work ?
 
-Each client sends its date to the server, and get the data of other clients in return.
+Each client sends its data to the server, and get the data of other clients in return.
 The data of a client is a dictionary of key/value pairs.
 All data are in-memory stored, there is no database involved in the process.
 
@@ -46,13 +46,18 @@ response is :
 
 ## Application side
 
-node_val could contain any string data
+The content of the value in the key/value pairs should avoid any collision with the JSON syntax.
 
-pos:"0 0 0", rot:"3.5 9.0 8.4 6.0", shp:"rect(1)", col:"#457900"
+* One way to do it is conversion to/from byte64
+
+* Another way is to use this kind of syntax :
+```
+pos=0 0 0;rot=3.5 9.0 8.4 6.0;shp=rect(1);col=#457900
+```
 
 ## TODO
 
-* [x] Not same JSON structure in request and in response ... problem ?
+* [] Add a DTO for python clients, can ease tests
 
 * [ ] reduce size of keywords
 
