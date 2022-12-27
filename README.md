@@ -1,40 +1,46 @@
 # Supersynk
 
-Supersynk is punk synchronisation
+Supersynk is punk synchronisation of distributed data
 
 ## What is supersynk ?
 
-Originaly created to synchronize VR users sharing the same VR environment.
-The idea is to make something as simple as possible with HTTP requests.
-HTTP is not the best approach for this problem yet this solution works.
+Originaly created to synchronize VR users sharing a common VR environment.
+The idea is to make something as simple as possible with as few HTTP requests as possible.
+HTTP is obviously not the most efficient approach for this problem. 
+The solution works yet, is simple, and VR usage has disappered in the meantime 
+(has been displaced to application level), making it usable in other contexts.
 
-## Naming conventions
+## How does it work ?
 
-The combination of host_key and node_key is unique on the channel
+Each client sends its date to the server, and get the data of other clients in return.
+The data of a client is a dictionary of key/value pairs.
+All data are in-memory stored, there is no database involved in the process.
 
 ## How to use it ?
 
-Supersync is synchronization server for distributed data
-Consists in a polling to one endpoint : 
-    * to upload local changes (request)
-    * and download changes from other users (response)
+The API is made of 2 endpoints, one for the clients who share data with the other participants of the channel, and one for  the pure observers of the channel.
 
-API is
+### Endpoint for a participant in the channel
 
-* POST 1.2.3.4:8090/syncserver/channel_key/
-  request is :
-  response is :
-  This endpoint is for a participant in the scene
+**POST** [ip]:[port]/synk/[channel_key]
 
-* GET 1.2.3.4:8090/syncserver/channel_key/
-  response is :
-  This endpoint is for an observer of the scene
+request is :
+```
+{"c"="ada", "d"=[{"k"="head", "v"="UYTFUYTDI"}]}
+```
+response is :
+```
+[{"c"="joe", "d"=[{"k"="head", "v"="OIHIBEZAWREZ"}]}]
+```
 
-Note : this API is not REST !
+### Endpoint for an observer of the channel
 
-Get a state of the scene via the API
-Convert it to events in the scene
-Update your 3D environement
+**GET** [ip]:[port]/synk/[channel_key]
+
+response is :
+```
+[{"c"="ada", "d"=[{"k"="head", "v"="UYTFUYTDI"}]}, {"c"="joe", "d"=[{"k"="head", "v"="OIHIBEZAWREZ"}]}]
+```
 
 ## Application side
 
@@ -44,7 +50,9 @@ pos:"0 0 0", rot:"3.5 9.0 8.4 6.0", shp:"rect(1)", col:"#457900"
 
 ## TODO
 
-* [ ] Not same JSON structure in request and in response ... problem ?
+* [x] Not same JSON structure in request and in response ... problem ?
+
+* [ ] reduce size of keywords
 
 * [ ] In object Channel :
     * Store a timestamp for each host update
@@ -68,8 +76,11 @@ pos:"0 0 0", rot:"3.5 9.0 8.4 6.0", shp:"rect(1)", col:"#457900"
       * not the user (a user can have several application contributing to the scene)
       * not the device (for teh same reason)
       * agent ? (5 letters)
+      * client
   * 'key' or 'id' ?
       * api_key mean it locks somethings
       * but "key/value" association is obvious
 
   * compacity : hk= nk= nv=
+
+  "c"="hh", "d"=[{"k"=1, "v"=2}]
