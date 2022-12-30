@@ -6,7 +6,6 @@ Supersynk is punk synchronisation of distributed data
 
 Sypersynk was originaly created to synchronize VR users sharing a common VR environment.
 
-
 The idea is to make something as simple as possible with as few HTTP requests as possible.
 HTTP is obviously not the most efficient approach for this problem. 
 The solution works yet, is simple, and VR specific usage has disappered in the meantime 
@@ -44,39 +43,38 @@ response is :
 [{"c"="ada", "d"=[{"k"="head", "v"="UYTFUYTDI"}]}, {"c"="joe", "d"=[{"k"="head", "v"="OIHIBEZAWREZ"}]}]
 ```
 
+## Running the server
+
+```
+python supersync_server.py
+```
+
+## Testing the server
+
+```
+curl 127.0.0.1:9999/api/channels
+```
+
+```
+curl 127.0.0.1:9999/api/channels/tests
+```
+
 ## Application side
 
-The content of the value in the key/value pairs should avoid any collision with the JSON syntax.
+The content of the "v" field should avoid collisions with the JSON syntax.
 
-* One way to do it is conversion to/from byte64
+* One way to do it is to use conversion to/from byte64
 
 * Another way is to use this kind of syntax :
 ```
-pos=0 0 0;rot=3.5 9.0 8.4 6.0;shp=rect(1);col=#457900
+"pos=0 0 0;rot=3.5 9.0 8.4 6.0;shp=rect(1);col=#457900"
 ```
 
 ## TODO
 
-* [] Add a DTO for python clients, can ease tests
+* [ ] Add a DTO for python clients, can ease tests
 
-* [ ] reduce size of keywords
-
-* [ ] In object Channel :
-    * Store a timestamp for each host update
-        * pass timestamp as a parameter in update() ? : 'update(s, timestamp)'
-    * add 'channel.set_host_timestamp(host_key)'
-    * add 'channel.is_host_disconnected(host_key, timeout)'
-    * add 'channel.remove_disconnected_hosts(timeout)'
-
-* [ ] Add object Channels :
-    * channels.update(channel_key:str, s:str)
-    * channels.clean_up(timeout : )
-        * timeout is the amount of time to consider a host as disconnected
-        * clean_up nodes inside channel (remove_disconnected_hosts)
-        * clean_up empty channels (containg no host)
-
-* [ ] In the clients, consider using base64 to encode data in node_val
-    * Create a synk_node_DTO where val is automaticaly converted
+* [x] reduce size of keywords
 
 * [ ] Refactoring ...
   * 'host' ? 

@@ -143,30 +143,30 @@ class Channels:
     
     # Update one channel (identified by channel_key) with a json_string
     # And get a json_string as a response
-    def update(self, channel_key:str, json_string:str, time:float) -> str:
+    def update(self, channel_id:str, json_string:str, time:float) -> str:
 
-        if not channel_key in self.channels:
+        if not channel_id in self.channels:
             # Create new Channel
-            self.channels[channel_key] = Channel()
+            self.channels[channel_id] = Channel()
 
         # Update channel
-        return self.channels[channel_key].update(json_string, time)
+        return self.channels[channel_id].update(json_string, time)
 
-    # Get the 'channel_key' of each active channel
-    def get_all_channel_keys(self):
+    # Get the 'channel_id' of each active channel
+    def get_all_channel_ids(self):
         # TODO
         pass
 
     # Get all nodes in one channel
-    def get_all_nodes(self, channel_key:str):
-        if not channel_key in self.channels:
+    def get_all_nodes(self, channel_id:str):
+        if not channel_id in self.channels:
             return "[]"
-        return self.channels[channel_key].get_all()
+        return self.channels[channel_id].get_all()
 
     #
     def remove_disconnected_clients(self, time:float, timeout:float):
-        for channel_key in self.channels.keys():
-            self.channels[channel_key].remove_disconnected_clients()
+        for channel_id in self.channels.keys():
+            self.channels[channel_id].remove_disconnected_clients()
 
     #
     def remove_empty_channels(self):
