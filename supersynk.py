@@ -1,4 +1,5 @@
 import json
+import time
 import threading
 
 # Channel class :
@@ -170,6 +171,13 @@ class Channels:
     #
     def remove_empty_channels(self):
         pass
+
+
+# Get time as the number of seconds elapsed since the script started
+starting_time = time.time()
+def get_current_time():
+    return time.time() - starting_time
+
 
 if __name__ == '__main__':
     print("supersynk 0.0.1 alpha")

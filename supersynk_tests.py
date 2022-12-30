@@ -1,5 +1,4 @@
 from supersynk import *
-import time
 
 # Home made test framework (because punk)
 def assert_eq(a, b):
@@ -78,7 +77,7 @@ def run_channel_tests():
     start_time = time.time()
     for i in range(0, request_count):
         channel.get_input_validation(json_str)
-        current_time = 0.01 * i
+        current_time = get_current_time()
         channel.update(json_str, current_time)
         channel.remove_disconnected_clients(current_time, 10.0)
     elapsed_time = time.time() - start_time
