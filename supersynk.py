@@ -2,22 +2,22 @@ import json
 import threading
 
 # Channel class :
-# A Channel contains data shared by several hosts (nodes)
-# A host updates one channel with its own nodes states, 
+# A Channel contains data shared by several clients
+# A client updates one channel with its own nodes states, 
 # and gets in return the state of all the nodes in the channel
 class Channel:
     def __init__(self):
         self.clients = {}
-        self.host_last_update = {} # host_key:str > time:float
+        self.clients_last_update = {} # client_id:str > time:float
         self.lock = threading.Lock()
 
     INPUT_IS_VALID = 0
     INPUT_IS_NONE = 1
     INPUT_IS_EMPTY_STRING = 2
     INPUT_IS_NOT_JSON = 3
-    HOST_KEY_IS_NOT_FOUND = 4
-    HOST_KEY_IS_NOT_STR = 5
-    HOST_KEY_IS_EMPTY = 6
+    CLIENT_ID_IS_NOT_FOUND = 4
+    CLIENT_ID_IS_NOT_STR = 5
+    CLIENT_ID_IS_EMPTY = 6
     NODES_IS_NOT_FOUND = 7
     NODES_IS_NOT_LIST = 8
 
@@ -38,27 +38,27 @@ class Channel:
         except:
             return Channel.INPUT_IS_NOT_JSON
 
-        # Check dictionary contains 'host_key'
-        if not "host_key" in d:
-            return Channel.HOST_KEY_IS_NOT_FOUND
+        # Check dictionary contains 'c' (client_id)
+        if not "c" in d:
+            return Channel.CLIENT_ID_IS_NOT_FOUND
 
-        host_key = d["host_key"]
+        client_id = d["c"]
 
-        # Check 'host_key' value is a string
-        if not type(host_key) is str:
-            return Channel.HOST_KEY_IS_NOT_STR
+        # Check 'c' value is a string
+        if not type(client_id) is str:
+            return Channel.CLIENT_ID_IS_NOT_STR
 
-        # Check 'host_key' value is not empty
-        if len(host_key) == 0:
-             return Channel.HOST_KEY_IS_EMPTY
+        # Check 'c' value is not empty
+        if len(client_id) == 0:
+             return Channel.CLIENT_ID_IS_EMPTY
 
         # Check dictionary contains 'nodes'
-        if not "nodes" in d:
+        if not "n" in d:
             return Channel.NODES_IS_NOT_FOUND
 
-        nodes = d["nodes"]
+        nodes = d["n"]
 
-        # Check 'nodes' value is a list
+        # Check nodes value is a list
         if not type(nodes) is list:
             return Channel.NODES_IS_NOT_LIST
 
@@ -66,13 +66,13 @@ class Channel:
 
     # Update a channel with a JSON string, call 'get_input_validation()' before
     # Take a json string as input
-    # Get a json string as output (all nodes except these belonging to host)
+    # Get a json string as output (all nodes except these belonging to client)
     def update(self, json_string:str, time:float) -> str:
         # Convert input
         try:
             d = json.loads(json_string) # d is a dictionary
-            host_key = d["host_key"]
-            nodes = d["nodes"]
+            client_id = d["c"]
+            nodes = d["n"]
         except:
             return "[]"
         
@@ -80,15 +80,15 @@ class Channel:
 
         # ----------------------------------
         if len(nodes) > 0: # do not store "[]"
-            # Store the json string of host_key
-            self.clients[host_key] = json_string
+            # Store the json string of client_id
+            self.clients[client_id] = json_string
 
-            # Store the update time of host_key
-            self.host_last_update[host_key] = time
+            # Store the update time of client_id
+            self.clients_last_update[client_id] = time
 
         # Get all other json strings
         for k in self.clients.keys():
-            if not k == host_key:
+            if not k == client_id:
                 json_strings.append(self.clients[k])
         # ----------------------------------
 
@@ -102,7 +102,7 @@ class Channel:
 
         return result
 
-    # Get a json string with all nodes of all hosts
+    # Get a json string with all nodes of all clients
     def get_all(self) -> str:
         json_strings = []
         # ----------------------------------
@@ -119,17 +119,17 @@ class Channel:
 
         return result
 
-    # Remove nodes whose last update is older than timeout
-    def remove_disconnected_hosts(self, time:float, timeout:float) -> bool :
+    # Remove clients whose last update is older than timeout
+    def remove_disconnected_clients(self, time:float, timeout:float) -> bool :
         disconnexion_occured = False
-        host_keys = list(self.host_last_update.keys())
-        for host_key in host_keys:
-            last_update = self.host_last_update[host_key]
+        client_ids = list(self.clients_last_update.keys())
+        for client_id in client_ids:
+            last_update = self.clients_last_update[client_id]
             if time - last_update > timeout:
                 # ------------------------------------------------------------
                 with self.lock :
-                    self.clients.pop(host_key, None)
-                    self.host_last_update.pop(host_key, None)
+                    self.clients.pop(client_id, None)
+                    self.clients_last_update.pop(client_id, None)
                 # ------------------------------------------------------------
                 disconnexion_occured = True
         return disconnexion_occured
@@ -163,9 +163,9 @@ class Channels:
         return self.channels[channel_key].get_all()
 
     #
-    def remove_disconnected_hosts(self, time:float, timeout:float):
+    def remove_disconnected_clients(self, time:float, timeout:float):
         for channel_key in self.channels.keys():
-            self.channels[channel_key].remove_disconnected_hosts()
+            self.channels[channel_key].remove_disconnected_clients()
 
     #
     def remove_empty_channels(self):
