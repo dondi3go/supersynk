@@ -6,20 +6,31 @@ Supersynk is punk synchronisation of distributed data
 
 Sypersynk was originaly created to synchronize VR users sharing a common VR environment.
 
-The idea is to make something as simple as possible with as few HTTP requests as possible.
-HTTP is obviously not the most efficient approach for this problem. 
-The solution works yet, is simple, and VR specific syntax has disappeared 
-(has been relocated to application level), making it usable in other contexts.
+The idea was to make something as simple as possible with as few HTTP requests as possible.
+HTTP is obviously not the most efficient approach to this problem. 
+Yet, the HTTP solution works and is simple. VR specific syntax has disappeared 
+(has been relocated to application level) since the first version, making it 
+usable in other contexts.
 
 ## How does it work ?
 
 Each client sends its data to the server, and get the data of other clients in return.
 The data of a client is a dictionary of key/value pairs.
+
 All data are in-memory stored, there is no database involved in the process.
+
+Clients connected to the same channel "see" each others. Clients belonging to
+different channels do not interact with each others.
+
+The server can host different channels.
 
 ## How to use it ?
 
-The API is made of 2 endpoints, one for the clients who share data with the other participants of the channel, and one for  the pure observers of the channel.
+The API is made of 2 endpoints, one for the clients who share data with the other participants of the channel, and another one for the pure observers of the channel.
+
+The second endpoint is optionnal.
+
+Clients can share/get data using one and only one HTTP request.
 
 ### Endpoint for a participant in the channel
 
@@ -34,7 +45,7 @@ response body could be :
 [{"c":"joe", "n":[{"k":"head", "v":"OIHIBEZAWREZ"}]}]
 ```
 
-### Endpoint for an observer of the channel
+### Optionnal endpoint for an observer of the channel
 
 **GET** [ip]:[port]/synk/[channel_key]
 
@@ -53,10 +64,6 @@ python supersync_server.py
 
 ```
 curl -X POST 127.0.0.1:9999/api/channels/tests -H 'Content-Type: application/json' -d '{"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}' 
-```
-
-```
-curl 127.0.0.1:9999/api/channels
 ```
 
 ```
