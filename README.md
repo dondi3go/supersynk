@@ -25,22 +25,22 @@ The API is made of 2 endpoints, one for the clients who share data with the othe
 
 **POST** [ip]:[port]/synk/[channel_key]
 
-request is :
+request body is :
 ```
-{"c"="ada", "d"=[{"k"="head", "v"="UYTFUYTDI"}]}
+{"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}
 ```
-response is :
+response body is :
 ```
-[{"c"="joe", "d"=[{"k"="head", "v"="OIHIBEZAWREZ"}]}]
+[{"c":"joe", "n":[{"k":"head", "v":"OIHIBEZAWREZ"}]}]
 ```
 
 ### Endpoint for an observer of the channel
 
 **GET** [ip]:[port]/synk/[channel_key]
 
-response is :
+response body is :
 ```
-[{"c"="ada", "d"=[{"k"="head", "v"="UYTFUYTDI"}]}, {"c"="joe", "d"=[{"k"="head", "v"="OIHIBEZAWREZ"}]}]
+[{"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}, {"c":"joe", "n":[{"k":"head", "v":"OIHIBEZAWREZ"}]}]
 ```
 
 ## Running the server
@@ -52,12 +52,17 @@ python supersync_server.py
 ## Testing the server
 
 ```
+curl -X POST 127.0.0.1:9999/api/channels/tests -H 'Content-Type: application/json' -d '{"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}' 
+```
+
+```
 curl 127.0.0.1:9999/api/channels
 ```
 
 ```
 curl 127.0.0.1:9999/api/channels/tests
 ```
+
 
 ## Application side
 

@@ -68,7 +68,7 @@ class Channel:
     # Update a channel with a JSON string, call 'get_input_validation()' before
     # Take a json string as input
     # Get a json string as output (all nodes except these belonging to client)
-    def update(self, json_string:str, time:float) -> str:
+    def update(self, json_string:str, current_time:float) -> str:
         # Convert input
         try:
             d = json.loads(json_string) # d is a dictionary
@@ -85,7 +85,7 @@ class Channel:
             self.clients[client_id] = json_string
 
             # Store the update time of client_id
-            self.clients_last_update[client_id] = time
+            self.clients_last_update[client_id] = current_time
 
         # Get all other json strings
         for k in self.clients.keys():
@@ -136,26 +136,33 @@ class Channel:
         return disconnexion_occured
 
 # Channels class :
-# Each channel is identified by a key
+# Each channel is identified by an id
 class Channels:
     def __init__(self):
-        self.channels = {} # channel_key > channel
-    
-    # Update one channel (identified by channel_key) with a json_string
+        self.channels = {} # channel_id > channel
+
+    # Update one channel (identified by channel_id) with a json_string
     # And get a json_string as a response
-    def update(self, channel_id:str, json_string:str, time:float) -> str:
+    def update(self, channel_id:str, json_string:str, current_time:float) -> str:
 
         if not channel_id in self.channels:
             # Create new Channel
             self.channels[channel_id] = Channel()
 
         # Update channel
-        return self.channels[channel_id].update(json_string, time)
+        return self.channels[channel_id].update(json_string, current_time)
 
     # Get the 'channel_id' of each active channel
     def get_all_channel_ids(self):
-        # TODO
-        pass
+        channel_ids = list(self.channels.keys())
+        count = len(channel_ids)
+        result = "["
+        for i, channel_id in enumerate(channel_ids):
+            result += "\"" + channel_id + "\""
+            if i<count-1:
+                result += ","
+        result += "]"
+        return result
 
     # Get all nodes in one channel
     def get_all_nodes(self, channel_id:str):
