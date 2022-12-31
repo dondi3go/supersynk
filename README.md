@@ -8,8 +8,8 @@ Sypersynk was originaly created to synchronize VR users sharing a common VR envi
 
 The idea is to make something as simple as possible with as few HTTP requests as possible.
 HTTP is obviously not the most efficient approach for this problem. 
-The solution works yet, is simple, and VR specific usage has disappered in the meantime 
-(has been displaced to application level), making it usable in other contexts.
+The solution works yet, is simple, and VR specific syntax has disappeared 
+(has been relocated to application level), making it usable in other contexts.
 
 ## How does it work ?
 
@@ -25,11 +25,11 @@ The API is made of 2 endpoints, one for the clients who share data with the othe
 
 **POST** [ip]:[port]/synk/[channel_key]
 
-request body is :
+with a request body like :
 ```
 {"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}
 ```
-response body is :
+response body could be :
 ```
 [{"c":"joe", "n":[{"k":"head", "v":"OIHIBEZAWREZ"}]}]
 ```
@@ -38,7 +38,7 @@ response body is :
 
 **GET** [ip]:[port]/synk/[channel_key]
 
-response body is :
+response body could be :
 ```
 [{"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}, {"c":"joe", "n":[{"k":"head", "v":"OIHIBEZAWREZ"}]}]
 ```
@@ -63,14 +63,13 @@ curl 127.0.0.1:9999/api/channels
 curl 127.0.0.1:9999/api/channels/tests
 ```
 
-
 ## Application side
 
 The content of the "v" field should avoid collisions with the JSON syntax.
 
 * One way to do it is to use conversion to/from byte64
 
-* Another way is to use this kind of syntax :
+* Another way is to use a syntax different from json, for example :
 ```
 "pos=0 0 0;rot=3.5 9.0 8.4 6.0;shp=rect(1);col=#457900"
 ```
@@ -79,18 +78,4 @@ The content of the "v" field should avoid collisions with the JSON syntax.
 
 * [ ] Add a DTO for python clients, can ease tests
 
-* [x] reduce size of keywords
-
-* [ ] Refactoring ...
-  * 'host' ? 
-      * not the user (a user can have several application contributing to the scene)
-      * not the device (for teh same reason)
-      * agent ? (5 letters)
-      * client
-  * 'key' or 'id' ?
-      * api_key mean it locks somethings
-      * but "key/value" association is obvious
-
-  * compacity : hk= nk= nv=
-
-  "c"="hh", "d"=[{"k"=1, "v"=2}]
+* [ ] Use json validation
