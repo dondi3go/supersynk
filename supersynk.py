@@ -4,8 +4,8 @@ import threading
 
 # Channel class :
 # A Channel contains data shared by several clients
-# A client updates one channel with its own nodes states, 
-# and gets in return the state of all the nodes in the channel
+# A client updates one channel with its own data, 
+# and gets in return the state of all the data in the channel
 class Channel:
     def __init__(self):
         self.clients = {}
@@ -19,10 +19,8 @@ class Channel:
     CLIENT_ID_IS_NOT_FOUND = 4
     CLIENT_ID_IS_NOT_STR = 5
     CLIENT_ID_IS_EMPTY = 6
-    NODES_IS_NOT_FOUND = 7
-    NODES_IS_NOT_LIST = 8
 
-    # Check s is a valid JSON string containing some special nodes
+    # Check s is a valid JSON string containing some special property
     def get_input_validation(self, json_string:str) -> int :
 
         # Check is not None
@@ -53,41 +51,32 @@ class Channel:
         if len(client_id) == 0:
              return Channel.CLIENT_ID_IS_EMPTY
 
-        # Check dictionary contains 'nodes'
-        if not "n" in d:
-            return Channel.NODES_IS_NOT_FOUND
-
-        nodes = d["n"]
-
-        # Check nodes value is a list
-        if not type(nodes) is list:
-            return Channel.NODES_IS_NOT_LIST
-
         return Channel.INPUT_IS_VALID
 
     # Update a channel with a JSON string, call 'get_input_validation()' before
     # Take a json string as input
-    # Get a json string as output (all nodes except these belonging to client)
+    # Get a json string as output (all data except these belonging to client)
     def update(self, json_string:str, current_time:float) -> str:
         # Convert input
         try:
             d = json.loads(json_string) # d is a dictionary
-            client_id = d["c"]
-            nodes = d["n"]
         except:
-            return "[]"
+            return "{\"error\":\"request payload (" + json_string + ") is not json\"}"
         
-        json_strings = []
+        try:
+            client_id = d["c"]
+        except:
+            return "{\"error\":\"json does not contain 'c' property\"}"
 
         # ----------------------------------
-        if len(nodes) > 0: # do not store "[]"
-            # Store the json string of client_id
-            self.clients[client_id] = json_string
+        # Store the json string of client_id
+        self.clients[client_id] = json_string
 
-            # Store the update time of client_id
-            self.clients_last_update[client_id] = current_time
+        # Store the update time of client_id
+        self.clients_last_update[client_id] = current_time
 
         # Get all other json strings
+        json_strings = []
         for k in self.clients.keys():
             if not k == client_id:
                 json_strings.append(self.clients[k])
@@ -103,7 +92,7 @@ class Channel:
 
         return result
 
-    # Get a json string with all nodes of all clients
+    # Get a json string containing all data from all clients
     def get_all(self) -> str:
         json_strings = []
         # ----------------------------------
@@ -164,8 +153,8 @@ class Channels:
         result += "]"
         return result
 
-    # Get all nodes in one channel
-    def get_all_nodes(self, channel_id:str):
+    # Get all data from one channel
+    def get_all_from(self, channel_id:str):
         if not channel_id in self.channels:
             return "[]"
         return self.channels[channel_id].get_all()

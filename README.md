@@ -7,17 +7,20 @@ Supersynk is punk synchronisation of distributed data
 Sypersynk was originaly created to synchronize VR users sharing a common VR environment.
 
 The idea was to make something as simple as possible with as few HTTP requests as possible.
-HTTP is obviously not the most efficient approach to this problem. 
-Yet, the HTTP solution works and is simple. VR specific syntax has disappeared 
-(has been relocated to application level) since the first version, making it 
-usable in other contexts.
+
+HTTP is obviously not the most efficient approach to this problem, but http libraries 
+are available in almost every programming language and the http tooling is strong.
+
+Far from being perfect, this HTTP solution works and is simple. 
+
+VR specific syntax has disappeared from the original idea (it has been relocated 
+to application level), making this server usable in other contexts.
 
 ## How does it work ?
 
 Each client sends its data to the server, and get the data of other clients in return.
-The data of a client is a dictionary of key/value pairs.
 
-All data are in-memory stored, there is no database involved in the process.
+All data are stored in-memory, there is no database involved in the process.
 
 Clients connected to the same channel "see" each others. Clients belonging to
 different channels do not interact with each others.
@@ -26,32 +29,31 @@ The server can host different channels.
 
 ## How to use it ?
 
-The API is made of 2 endpoints, one for the clients who share data with the other participants of the channel, and another one for the pure observers of the channel.
+The API is made of 2 endpoints, one for the clients who share data with the other 
+participants of the channel, and another one for the pure observer clients of the channel.
 
-The second endpoint is optionnal.
-
-Clients can share/get data using one and only one HTTP request.
+In each use case, clients can share/get data using one and only one HTTP request.
 
 ### Endpoint for a participant in the channel
 
-**POST** [ip]:[port]/synk/[channel_key]
+**POST** [ip]:[port]/api/channels/[channel_key]
 
 with a request body like :
 ```
-{"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}
+{"c":"ada"}
 ```
 response body could be :
 ```
-[{"c":"joe", "n":[{"k":"head", "v":"OIHIBEZAWREZ"}]}]
+[{"c":"joe"}]
 ```
 
-### Optionnal endpoint for an observer of the channel
+### Endpoint for an observer of the channel
 
-**GET** [ip]:[port]/synk/[channel_key]
+**GET** [ip]:[port]/api/channels/[channel_key]
 
 response body could be :
 ```
-[{"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}, {"c":"joe", "n":[{"k":"head", "v":"OIHIBEZAWREZ"}]}]
+[{"c":"ada"}, {"c":"joe"}]
 ```
 
 ## Running the server
@@ -62,27 +64,18 @@ python supersync_server.py
 
 ## Testing the server
 
+Sending data to 'test' channel
 ```
-curl -X POST 127.0.0.1:9999/api/channels/tests -H 'Content-Type: application/json' -d '{"c":"ada", "n":[{"k":"head", "v":"UYTFUYTDI"}]}' 
-```
-
-```
-curl 127.0.0.1:9999/api/channels/tests
+curl -X POST http://127.0.0.1:9999/api/channels/test -H "Content-Type:application/json" -d {\"c\":\"ada\"}
+curl -X POST http://127.0.0.1:9999/api/channels/test -H "Content-Type:application/json" -d {\"c\":\"joe\"}
 ```
 
-## Application side
-
-The content of the "v" field should avoid collisions with the JSON syntax.
-
-* One way to do it is to use conversion to/from byte64
-
-* Another way is to use a syntax different from json, for example :
+Getting data from 'test' channel
 ```
-"pos=0 0 0;rot=3.5 9.0 8.4 6.0;shp=rect(1);col=#457900"
+curl http://127.0.0.1:9999/api/channels/test
 ```
 
-## TODO
-
-* [ ] Add a DTO for python clients, can ease tests
-
-* [ ] Use json validation
+Or checking this url with a web browser
+```
+http://127.0.0.1:9999/api/channels/test
+```

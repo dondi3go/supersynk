@@ -17,7 +17,7 @@ def get_channel_names():
 #
 @app.route('/api/channels/<channel_id>', methods=["GET"])
 def get_one_channel(channel_id):
-    body = channels.get_all_nodes(channel_id)
+    body = channels.get_all_from(channel_id)
     return body, 200
 
 #
@@ -27,8 +27,8 @@ def get_one_channel(channel_id):
 def update_one_channel(channel_id):
     request_body = request.data.decode('utf-8') # request.data is of type 'bytes'
     current_time = get_current_time()
-    body = channels.update(channel_id, request_body, current_time)
-    return body, 200
+    response_body = channels.update(channel_id, request_body, current_time)
+    return response_body, 200
 
 #
 #

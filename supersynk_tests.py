@@ -30,14 +30,17 @@ def run_channel_tests():
     print("TEST 1f : validate wrong client id value")
     assert_eq(Channel.CLIENT_ID_IS_EMPTY, channel.get_input_validation("{\"c\":\"\", \"n\":[]}"))
 
-    print("TEST 1g : validate no 'nodes' key")
-    assert_eq(Channel.NODES_IS_NOT_FOUND, channel.get_input_validation("{\"c\":\"ada\"}"))
+    print("TEST 1g : validate no additional data")
+    assert_eq(Channel.INPUT_IS_VALID, channel.get_input_validation("{\"c\":\"ada\"}"))
 
-    print("TEST 1h : validate wrong nodes value")
-    assert_eq(Channel.NODES_IS_NOT_LIST, channel.get_input_validation("{\"c\":\"ada\", \"n\":\"\"}"))
+    print("TEST 1h : validate additional data as string")
+    assert_eq(Channel.INPUT_IS_VALID, channel.get_input_validation("{\"c\":\"ada\", \"n\":\"\"}"))
 
-    print("TEST 1i : validate minimum data")
+    print("TEST 1i : validate additional data as array")
     assert_eq(Channel.INPUT_IS_VALID, channel.get_input_validation("{\"c\":\"ada\", \"n\":[]}"))
+
+    print("TEST 1j : validate additional data as json")
+    assert_eq(Channel.INPUT_IS_VALID, channel.get_input_validation("{\"c\":\"ada\", \"n\":{\"titi\":\"toto\"}}"))
 
     # UPDATE
 
@@ -91,20 +94,20 @@ def run_channels_tests():
     channels = Channels()
 
     print("TEST 1 : update with minimum data")
-    res = channels.update("test", "{\"c\":\"ada\", \"n\":[]}", 0.0)
+    res = channels.update("test", "{\"c\":\"ada\"}", 0.0)
     assert_eq("[]", res)
 
     print("TEST 2 : update with other data")
-    res = channels.update("test", "{\"c\":\"joe\", \"n\":[{\"k\":\"rhand\", \"v\":\"b\"}]}", 0.0)
-    assert_eq("[]", res)
+    res = channels.update("test", "{\"c\":\"joe\"}", 0.0)
+    assert_eq("[{\"c\":\"ada\"}]", res)
 
-    print("TEST 3 : get all nodes from existing channel")
-    res = channels.get_all_nodes("test")
-    expected_res = "[{\"c\":\"joe\", \"n\":[{\"k\":\"rhand\", \"v\":\"b\"}]}]"
+    print("TEST 3 : get all data from existing channel")
+    res = channels.get_all_from("test")
+    expected_res = "[{\"c\":\"ada\"},{\"c\":\"joe\"}]"
     assert_eq(expected_res, res)
 
-    print("TEST 4 : get all nodes from non-existing channel")
-    res = channels.get_all_nodes("toto")
+    print("TEST 4 : get all data from non-existing channel")
+    res = channels.get_all_from("toto")
     expected_res = "[]"
     assert_eq(expected_res, res)
 
