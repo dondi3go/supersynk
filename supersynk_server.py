@@ -9,6 +9,8 @@ channels = Channels()
 #
 @app.route('/api', methods=["GET"])
 def get_api_details():
+    """Details about the API
+    """
     body = "supersynk server"
     return body, 200
 
@@ -17,6 +19,8 @@ def get_api_details():
 #
 @app.route('/api/channels', methods=["GET"])
 def get_channel_ids():
+    """Get the ids of all the channels
+    """
     body = channels.get_all_channel_ids()
     return body, 200
 
@@ -25,6 +29,8 @@ def get_channel_ids():
 #
 @app.route('/api/channels/<channel_id>', methods=["GET"])
 def get_one_channel(channel_id):
+    """Get the data of all the clients of one channel
+    """
     body = channels.get_all_from(channel_id)
     return body, 200
 
@@ -33,6 +39,8 @@ def get_one_channel(channel_id):
 #
 @app.route('/api/channels/<channel_id>', methods=["POST"])
 def update_one_channel(channel_id):
+    """Update one client in one channel, and get the data of all the other clients
+    """
     request_body = request.data.decode('utf-8') # request.data is of type 'bytes'
     current_time = get_current_time()
     response_body = channels.update(channel_id, request_body, current_time)

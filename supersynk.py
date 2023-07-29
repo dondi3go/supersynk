@@ -3,6 +3,8 @@ import time
 import threading
 
 class PayloadValidator:
+    """Validate the payload of the requests made to the server.
+    """
     def __init__(self):
         pass
 
@@ -14,9 +16,9 @@ class PayloadValidator:
     CLIENT_ID_IS_NOT_STR = 5
     CLIENT_ID_IS_EMPTY = 6
 
-    # Check json_string is a valid JSON string containing some special property
     def get_input_validation(self, json_string:str) -> int :
-
+        """Check json_string is a valid JSON string containing some special property
+        """
         # Check is not None
         if json_string is None:
             return PayloadValidator.INPUT_IS_NONE
@@ -28,7 +30,7 @@ class PayloadValidator:
         # Check is json
         try:
             dic = json.loads(json_string) # dic is a dictionary
-        except:
+        except json.JSONDecodeError:
             return PayloadValidator.INPUT_IS_NOT_JSON
 
         # Check dictionary contains 'client_id'
@@ -38,21 +40,21 @@ class PayloadValidator:
         client_id = dic[Channel.CLIENT_ID_PROPERTY_NAME]
 
         # Check client_id value is a string
-        if not type(client_id) is str:
+        if not isinstance(client_id, str):
             return PayloadValidator.CLIENT_ID_IS_NOT_STR
 
         # Check client_id value is not empty
         if len(client_id) == 0:
-             return PayloadValidator.CLIENT_ID_IS_EMPTY
+            return PayloadValidator.CLIENT_ID_IS_EMPTY
 
         return PayloadValidator.INPUT_IS_VALID
 
 
-# Channel class :
-# A Channel contains data shared by several clients.
-# A client updates one channel with its own data, 
-# and gets in return the data of all the other clients in the channel.
 class Channel:
+    """A Channel contains data provided by one or several clients.
+    A client updates one channel with its own data,
+    and gets in return the data of all the other clients of the channel.
+    """
     def __init__(self):
         self.clients = {}
         self.clients_last_update = {} # client_id:str > time:float
@@ -60,17 +62,19 @@ class Channel:
 
     CLIENT_ID_PROPERTY_NAME = "client_id"
 
-    # Update a channel with a JSON string, call 'get_input_validation()' before
-    # Take a json string as input
-    # Get a json string as output (all data except these belonging to client)
     def update(self, json_string:str, current_time:float) -> str:
+        """Update a channel with a JSON string, call 'get_input_validation()' before
+        Take a json string as input
+        Get a json string as output (all data except these belonging to client)
+        """
 
         # Assume validation has been performed before
         # but protect anyway
         try:
             dic = json.loads(json_string) # dic is a dictionary
             client_id = dic[Channel.CLIENT_ID_PROPERTY_NAME]
-        except:
+            assert len(client_id) > 0
+        except (json.JSONDecodeError, KeyError, AssertionError):
             return r'{"error":"invalid input (' + json_string + r')"}'
 
         # ----------------------------------
@@ -82,9 +86,9 @@ class Channel:
 
         # Get all other json strings
         json_strings = []
-        for k in self.clients.keys():
-            if not k == client_id:
-                json_strings.append(self.clients[k])
+        for (key, value) in self.clients.items():
+            if not key == client_id:
+                json_strings.append(value)
         # ----------------------------------
 
         result = "["
@@ -97,8 +101,9 @@ class Channel:
 
         return result
 
-    # Get a json string containing all data from all clients
     def get_all(self) -> str:
+        """Get a json string containing data from all clients in the channel
+        """
         json_strings = []
         # ----------------------------------
         with self.lock :
@@ -114,13 +119,14 @@ class Channel:
 
         return result
 
-    # Remove clients whose last update is older than timeout
-    def remove_disconnected_clients(self, time:float, timeout:float) -> bool :
+    def remove_disconnected_clients(self, current_time:float, timeout:float) -> bool :
+        """Remove clients whose last update is older than timeout
+        """
         disconnexion_occured = False
         client_ids = list(self.clients_last_update.keys())
         for client_id in client_ids:
             last_update = self.clients_last_update[client_id]
-            if time - last_update > timeout:
+            if current_time - last_update > timeout:
                 # ------------------------------------------------------------
                 with self.lock :
                     self.clients.pop(client_id, None)
@@ -130,16 +136,19 @@ class Channel:
         return disconnexion_occured
 
 
-# Channels class :
-# Each channel is identified by an id
 class Channels:
+    """Each channel is identified by an id, 
+    and contains data provided by one or several clients
+
+    The server directly uses this class, it does not have to use Channel.
+    """
     def __init__(self):
         self.channels = {} # channel_id > channel
 
-    # Update one channel (identified by channel_id) with a json_string
-    # And get a json_string as a response
     def update(self, channel_id:str, json_string:str, current_time:float) -> str:
-
+        """Update one channel (identified by channel_id) with a json_string
+        And get a json_string as a response
+        """
         if not channel_id in self.channels:
             # Create new Channel
             self.channels[channel_id] = Channel()
@@ -147,8 +156,9 @@ class Channels:
         # Update channel
         return self.channels[channel_id].update(json_string, current_time)
 
-    # Get the 'channel_id' of each active channel
     def get_all_channel_ids(self):
+        """Get the 'channel_id' of all active channel
+        """
         channel_ids = list(self.channels.keys())
         count = len(channel_ids)
         result = "["
@@ -159,26 +169,29 @@ class Channels:
         result += "]"
         return result
 
-    # Get all data from one channel
     def get_all_from(self, channel_id:str):
+        """Get all data from one channel
+        """
         if not channel_id in self.channels:
             return "[]"
         return self.channels[channel_id].get_all()
 
-    #
-    def remove_disconnected_clients(self, time:float, timeout:float):
-        for channel_id in self.channels.keys():
-            self.channels[channel_id].remove_disconnected_clients()
+    def remove_disconnected_clients(self, current_time:float, timeout:float):
+        """Remove clients whose latest update time is older than 'timeout'
+        """
+        for channel in self.channels.values():
+            channel.remove_disconnected_clients(current_time, timeout)
 
-    #
     def remove_empty_channels(self):
-        # TODO
+        """TODO
+        """
         pass
 
 
-# Get time as the number of seconds elapsed since the script started
 starting_time = time.time()
 def get_current_time():
+    """Get time as the number of seconds elapsed since the script started
+    """
     return time.time() - starting_time
 
 

@@ -1,5 +1,5 @@
 import unittest
-from supersynk import *
+from supersynk import PayloadValidator, Channel, Channels
 
 class PayloadValidatorTest(unittest.TestCase):
 
@@ -66,7 +66,7 @@ class ChannelTests(unittest.TestCase):
         self.assertEqual(r'[]', res)
 
     def test_update_with_additional_data(self):
-        # TODO : MAKE IT WORK
+        # FIXME
         #res = self.channel.update("{\"c\":\"ada\", \"a\":\"\", \"b\":[], \"c\":{}}", 0.0)
         res = self.channel.update(r'{"client_id":"ada", "a":"", "b":[]}', 0.0)
         self.assertEqual(r'[]', res)
@@ -129,29 +129,6 @@ class ChannelsTests(unittest.TestCase):
     def test_channels_get_all_from_non_existing_channel(self):
         res = self.channels.get_all_from("toto")
         self.assertEqual(r'[]', res)
-
-# Home made test framework (because punk)
-def assert_eq(a, b):
-    print(" ok" if a == b else " KO : " + str(a) + " != " + str(b))
-
-# Tests for class Channel
-def run_channel_tests():
-
-    print("TEST 7 : performances")
-    node1 = "{\"k\":\"head\", \"v\":\"a\"}"
-    node2 = "{\"k\":\"rhand\", \"v\":\"b\"}"
-    node3 = "{\"k\":\"lhand\", \"v\":\"c\"}"
-    json_str = "{\"c\":\"joe\", \"n\":[" + node1 + "," + node2 + "," + node3 + "]}"
-    request_count = 10000
-    start_time = time.time()
-    for i in range(0, request_count):
-        channel.get_input_validation(json_str)
-        current_time = get_current_time()
-        channel.update(json_str, current_time)
-        channel.remove_disconnected_clients(current_time, 10.0)
-    elapsed_time = time.time() - start_time
-    update_per_sec = request_count / elapsed_time
-    print(str(int(update_per_sec)) + " updates per sec")
 
 if __name__ == '__main__':
     unittest.main()
