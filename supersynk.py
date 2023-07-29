@@ -27,21 +27,21 @@ class PayloadValidator:
 
         # Check is json
         try:
-            d = json.loads(json_string) # d is a dictionary
+            dic = json.loads(json_string) # dic is a dictionary
         except:
             return PayloadValidator.INPUT_IS_NOT_JSON
 
-        # Check dictionary contains 'c' (client_id)
-        if not "c" in d:
+        # Check dictionary contains 'client_id'
+        if not Channel.CLIENT_ID_PROPERTY_NAME in dic:
             return PayloadValidator.CLIENT_ID_IS_NOT_FOUND
 
-        client_id = d["c"]
+        client_id = dic[Channel.CLIENT_ID_PROPERTY_NAME]
 
-        # Check 'c' value is a string
+        # Check client_id value is a string
         if not type(client_id) is str:
             return PayloadValidator.CLIENT_ID_IS_NOT_STR
 
-        # Check 'c' value is not empty
+        # Check client_id value is not empty
         if len(client_id) == 0:
              return PayloadValidator.CLIENT_ID_IS_EMPTY
 
@@ -58,7 +58,7 @@ class Channel:
         self.clients_last_update = {} # client_id:str > time:float
         self.lock = threading.Lock()
 
-    CLIENT_ID_PROPERTY_NAME = "c"
+    CLIENT_ID_PROPERTY_NAME = "client_id"
 
     # Update a channel with a JSON string, call 'get_input_validation()' before
     # Take a json string as input
@@ -66,6 +66,7 @@ class Channel:
     def update(self, json_string:str, current_time:float) -> str:
 
         # Assume validation has been performed before
+        # but protect anyway
         try:
             dic = json.loads(json_string) # dic is a dictionary
             client_id = dic[Channel.CLIENT_ID_PROPERTY_NAME]
@@ -127,6 +128,7 @@ class Channel:
                 # ------------------------------------------------------------
                 disconnexion_occured = True
         return disconnexion_occured
+
 
 # Channels class :
 # Each channel is identified by an id
