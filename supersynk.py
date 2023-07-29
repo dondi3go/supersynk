@@ -2,15 +2,9 @@ import json
 import time
 import threading
 
-# Channel class :
-# A Channel contains data shared by several clients
-# A client updates one channel with its own data, 
-# and gets in return the state of all the data in the channel
-class Channel:
+class PayloadValidator:
     def __init__(self):
-        self.clients = {}
-        self.clients_last_update = {} # client_id:str > time:float
-        self.lock = threading.Lock()
+        pass
 
     INPUT_IS_VALID = 0
     INPUT_IS_NONE = 1
@@ -20,38 +14,49 @@ class Channel:
     CLIENT_ID_IS_NOT_STR = 5
     CLIENT_ID_IS_EMPTY = 6
 
-    # Check s is a valid JSON string containing some special property
+    # Check json_string is a valid JSON string containing some special property
     def get_input_validation(self, json_string:str) -> int :
 
         # Check is not None
         if json_string is None:
-            return Channel.INPUT_IS_NONE
+            return PayloadValidator.INPUT_IS_NONE
 
         # Check is not an empty string
         if json_string == "":
-            return Channel.INPUT_IS_EMPTY_STRING
+            return PayloadValidator.INPUT_IS_EMPTY_STRING
 
         # Check is json
         try:
             d = json.loads(json_string) # d is a dictionary
         except:
-            return Channel.INPUT_IS_NOT_JSON
+            return PayloadValidator.INPUT_IS_NOT_JSON
 
         # Check dictionary contains 'c' (client_id)
         if not "c" in d:
-            return Channel.CLIENT_ID_IS_NOT_FOUND
+            return PayloadValidator.CLIENT_ID_IS_NOT_FOUND
 
         client_id = d["c"]
 
         # Check 'c' value is a string
         if not type(client_id) is str:
-            return Channel.CLIENT_ID_IS_NOT_STR
+            return PayloadValidator.CLIENT_ID_IS_NOT_STR
 
         # Check 'c' value is not empty
         if len(client_id) == 0:
-             return Channel.CLIENT_ID_IS_EMPTY
+             return PayloadValidator.CLIENT_ID_IS_EMPTY
 
-        return Channel.INPUT_IS_VALID
+        return PayloadValidator.INPUT_IS_VALID
+
+
+# Channel class :
+# A Channel contains data shared by several clients.
+# A client updates one channel with its own data, 
+# and gets in return the data of all the other clients in the channel.
+class Channel:
+    def __init__(self):
+        self.clients = {}
+        self.clients_last_update = {} # client_id:str > time:float
+        self.lock = threading.Lock()
 
     # Update a channel with a JSON string, call 'get_input_validation()' before
     # Take a json string as input
@@ -166,6 +171,7 @@ class Channels:
 
     #
     def remove_empty_channels(self):
+        # TODO
         pass
 
 

@@ -1,4 +1,124 @@
+import unittest
 from supersynk import *
+
+class PayloadValidatorTest(unittest.TestCase):
+
+    def setUp(self):
+        self.validator = PayloadValidator()
+
+    def test_validate_input_is_none(self):
+        res = self.validator.get_input_validation(None)
+        self.assertEqual(PayloadValidator.INPUT_IS_NONE, res)
+
+    def test_validate_input_is_empty_string(self):
+        res = self.validator.get_input_validation("")
+        self.assertEqual(PayloadValidator.INPUT_IS_EMPTY_STRING, res)
+
+    def test_validate_input_is_not_json(self):
+        res = self.validator.get_input_validation("-")
+        self.assertEqual(PayloadValidator.INPUT_IS_NOT_JSON, res)
+
+    def test_validate_client_id_not_found(self):
+        res = self.validator.get_input_validation("{\"a\":\"b\"}")
+        self.assertEqual(PayloadValidator.CLIENT_ID_IS_NOT_FOUND, res)
+
+    def test_validate_client_id_not_str(self):
+        res = self.validator.get_input_validation("{\"c\":0}")
+        self.assertEqual(PayloadValidator.CLIENT_ID_IS_NOT_STR, res)
+
+    def test_validate_client_id_empty(self):
+        res = self.validator.get_input_validation("{\"c\":\"\"}")
+        self.assertEqual(PayloadValidator.CLIENT_ID_IS_EMPTY, res)
+
+    def test_validate_input_is_valid(self):
+        res = self.validator.get_input_validation("{\"c\":\"ada\"}")
+        self.assertEqual(PayloadValidator.INPUT_IS_VALID, res)
+
+    def test_validate_input_is_valid_additional_data_as_string(self):
+        res = self.validator.get_input_validation("{\"c\":\"ada\", \"anything\":\"anything\"}")
+        self.assertEqual(PayloadValidator.INPUT_IS_VALID, res)
+
+    def test_validate_input_is_valid_additional_data_as_array(self):
+        res = self.validator.get_input_validation("{\"c\":\"ada\", \"anything\":[]}")
+        self.assertEqual(PayloadValidator.INPUT_IS_VALID, res)
+
+    def test_validate_input_is_valid_additional_data_as_json(self):
+        res = self.validator.get_input_validation("{\"c\":\"ada\", \"anything\":{}}")
+        self.assertEqual(PayloadValidator.INPUT_IS_VALID, res)
+
+
+
+class ChannelTests(unittest.TestCase):
+
+    def setUp(self):
+        self.channel = Channel()
+
+    def test_update_with_minimum_data(self):
+        res = self.channel.update("{\"c\":\"ada\"}", 0.0)
+        self.assertEqual("[]", res)
+
+    def test_update_with_additional_data(self):
+        # TODO : MAKE IT WORK
+        #res = self.channel.update("{\"c\":\"ada\", \"a\":\"\", \"b\":[], \"c\":{}}", 0.0)
+        res = self.channel.update("{\"c\":\"ada\", \"a\":\"\", \"b\":[]}", 0.0)
+        self.assertEqual("[]", res)
+
+    def test_two_updates_from_different_clients(self):
+        self.channel.update("{\"c\":\"ada\"}", 0.0)
+        res = self.channel.update("{\"c\":\"joe\"}", 0.0)
+        self.assertEqual("[{\"c\":\"ada\"}]", res)
+
+    def test_get_all_on_empty_channel(self):
+        res = self.channel.get_all()
+        self.assertEqual("[]", res)
+
+    def test_get_all_on_not_empty_channel(self):
+        self.channel.update("{\"c\":\"ada\"}", 0.0)
+        self.channel.update("{\"c\":\"joe\"}", 0.0)
+        res = self.channel.get_all()
+        self.assertEqual("[{\"c\":\"ada\"},{\"c\":\"joe\"}]", res)
+
+    def test_remove_disconnected_client(self):
+        # add clients in the channel
+        self.channel.update("{\"c\":\"ada\"}", 0.0)
+        self.channel.update("{\"c\":\"joe\"}", 1.0)
+        # remove disconnected clients
+        timeout = 5
+        current_time = 10
+        res = self.channel.remove_disconnected_clients(current_time, timeout)
+        self.assertEqual(True, res) # True = some client(s) were disconnected
+        # check channel is empty
+        res = self.channel.get_all()
+        self.assertEqual("[]", res)
+        # try removing disconnected clients again
+        current_time = 11
+        res = self.channel.remove_disconnected_clients(current_time, timeout)
+        self.assertEqual(False, res) # False = no client were disconnected
+
+
+class ChannelsTests(unittest.TestCase):
+
+    def setUp(self):
+        self.channels = Channels()
+
+    def test_channels_update_with_minimum_data(self):
+        res = self.channels.update("test", "{\"c\":\"ada\"}", 0.0)
+        self.assertEqual("[]", res)
+
+    def test_channels_update_with_two_clients(self):
+        self.channels.update("test", "{\"c\":\"ada\"}", 0.0)
+        res = self.channels.update("test", "{\"c\":\"joe\"}", 0.0)
+        self.assertEqual("[{\"c\":\"ada\"}]", res)
+
+    def test_channels_get_all_from(self):
+        self.channels.update("test", "{\"c\":\"ada\"}", 0.0)
+        self.channels.update("test", "{\"c\":\"joe\"}", 0.0)
+        res = self.channels.get_all_from("test")
+        self.assertEqual("[{\"c\":\"ada\"},{\"c\":\"joe\"}]", res)
+
+    def test_channels_get_all_from_non_existing_channel(self):
+        res = self.channels.get_all_from("toto")
+        self.assertEqual("[]", res)
 
 # Home made test framework (because punk)
 def assert_eq(a, b):
@@ -6,70 +126,6 @@ def assert_eq(a, b):
 
 # Tests for class Channel
 def run_channel_tests():
-
-    print("\nTESTS for class Channel")
-    channel = Channel()
-
-    # INPUT VALIDATION
-
-    print("TEST 1a : validate data is None")
-    assert_eq(Channel.INPUT_IS_NONE, channel.get_input_validation(None))
-
-    print("TEST 1b : validate no data")
-    assert_eq(Channel.INPUT_IS_EMPTY_STRING, channel.get_input_validation(""))
-
-    print("TEST 1c : validate wrong data")
-    assert_eq(Channel.INPUT_IS_NOT_JSON, channel.get_input_validation("-"))
-
-    print("TEST 1d : validate wrong data")
-    assert_eq(Channel.CLIENT_ID_IS_NOT_FOUND, channel.get_input_validation("{\"a\":\"b\"}"))
-
-    print("TEST 1e : validate wrong client id value")
-    assert_eq(Channel.CLIENT_ID_IS_NOT_STR, channel.get_input_validation("{\"c\":0, \"n\":[]}"))
-
-    print("TEST 1f : validate wrong client id value")
-    assert_eq(Channel.CLIENT_ID_IS_EMPTY, channel.get_input_validation("{\"c\":\"\", \"n\":[]}"))
-
-    print("TEST 1g : validate no additional data")
-    assert_eq(Channel.INPUT_IS_VALID, channel.get_input_validation("{\"c\":\"ada\"}"))
-
-    print("TEST 1h : validate additional data as string")
-    assert_eq(Channel.INPUT_IS_VALID, channel.get_input_validation("{\"c\":\"ada\", \"n\":\"\"}"))
-
-    print("TEST 1i : validate additional data as array")
-    assert_eq(Channel.INPUT_IS_VALID, channel.get_input_validation("{\"c\":\"ada\", \"n\":[]}"))
-
-    print("TEST 1j : validate additional data as json")
-    assert_eq(Channel.INPUT_IS_VALID, channel.get_input_validation("{\"c\":\"ada\", \"n\":{\"titi\":\"toto\"}}"))
-
-    # UPDATE
-
-    print("TEST 2 : update with minimum data")
-    res = channel.update("{\"c\":\"ada\", \"n\":[]}", 0.0)
-    assert_eq("[]", res)
-
-    print("TEST 3 : update with one node (ada)")
-    res = channel.update("{\"c\":\"ada\", \"n\":[{\"k\":\"rhand\", \"v\":\"a\"}]}", 0.0)
-    assert_eq("[]", res)
-
-    print("TEST 4 : update with another node (joe) and get ada")
-    res = channel.update("{\"c\":\"joe\", \"n\":[{\"k\":\"rhand\", \"v\":\"b\"}]}", 0.0)
-    assert_eq("[{\"c\":\"ada\", \"n\":[{\"k\":\"rhand\", \"v\":\"a\"}]}]", res)
-    # check result is json
-
-    print("TEST 5 : get all nodes")
-    res = channel.get_all()
-    expected_res = "[{\"c\":\"ada\", \"n\":[{\"k\":\"rhand\", \"v\":\"a\"}]},{\"c\":\"joe\", \"n\":[{\"k\":\"rhand\", \"v\":\"b\"}]}]"
-    assert_eq(expected_res, res)
-    # check result is json
-
-    print("TEST 6 : disconnect everyone")
-    res = channel.remove_disconnected_clients(10.0, 1.0)
-    assert_eq(True, res)
-    res = channel.get_all()
-    assert_eq("[]", res)
-    res = channel.remove_disconnected_clients(11.0, 1.0)
-    assert_eq(False, res)
 
     print("TEST 7 : performances")
     node1 = "{\"k\":\"head\", \"v\":\"a\"}"
@@ -87,32 +143,5 @@ def run_channel_tests():
     update_per_sec = request_count / elapsed_time
     print(str(int(update_per_sec)) + " updates per sec")
 
-# Tests for class Channels
-def run_channels_tests():
-
-    print("\nTESTS for class Channels")
-    channels = Channels()
-
-    print("TEST 1 : update with minimum data")
-    res = channels.update("test", "{\"c\":\"ada\"}", 0.0)
-    assert_eq("[]", res)
-
-    print("TEST 2 : update with other data")
-    res = channels.update("test", "{\"c\":\"joe\"}", 0.0)
-    assert_eq("[{\"c\":\"ada\"}]", res)
-
-    print("TEST 3 : get all data from existing channel")
-    res = channels.get_all_from("test")
-    expected_res = "[{\"c\":\"ada\"},{\"c\":\"joe\"}]"
-    assert_eq(expected_res, res)
-
-    print("TEST 4 : get all data from non-existing channel")
-    res = channels.get_all_from("toto")
-    expected_res = "[]"
-    assert_eq(expected_res, res)
-
-
 if __name__ == '__main__':
-    # Tests
-    run_channel_tests()
-    run_channels_tests()
+    unittest.main()

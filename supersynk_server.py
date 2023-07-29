@@ -7,8 +7,16 @@ channels = Channels()
 #
 #
 #
+@app.route('/api', methods=["GET"])
+def get_api_details():
+    body = "supersynk server"
+    return body, 200
+
+#
+#
+#
 @app.route('/api/channels', methods=["GET"])
-def get_channel_names():
+def get_channel_ids():
     body = channels.get_all_channel_ids()
     return body, 200
 
