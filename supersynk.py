@@ -58,20 +58,19 @@ class Channel:
         self.clients_last_update = {} # client_id:str > time:float
         self.lock = threading.Lock()
 
+    CLIENT_ID_PROPERTY_NAME = "c"
+
     # Update a channel with a JSON string, call 'get_input_validation()' before
     # Take a json string as input
     # Get a json string as output (all data except these belonging to client)
     def update(self, json_string:str, current_time:float) -> str:
-        # Convert input
+
+        # Assume validation has been performed before
         try:
-            d = json.loads(json_string) # d is a dictionary
+            dic = json.loads(json_string) # dic is a dictionary
+            client_id = dic[Channel.CLIENT_ID_PROPERTY_NAME]
         except:
-            return "{\"error\":\"request payload (" + json_string + ") is not json\"}"
-        
-        try:
-            client_id = d["c"]
-        except:
-            return "{\"error\":\"json does not contain 'c' property\"}"
+            return r'{"error":"invalid input (' + json_string + r')"}'
 
         # ----------------------------------
         # Store the json string of client_id

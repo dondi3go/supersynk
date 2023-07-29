@@ -11,39 +11,39 @@ class PayloadValidatorTest(unittest.TestCase):
         self.assertEqual(PayloadValidator.INPUT_IS_NONE, res)
 
     def test_validate_input_is_empty_string(self):
-        res = self.validator.get_input_validation("")
+        res = self.validator.get_input_validation(r'')
         self.assertEqual(PayloadValidator.INPUT_IS_EMPTY_STRING, res)
 
     def test_validate_input_is_not_json(self):
-        res = self.validator.get_input_validation("-")
+        res = self.validator.get_input_validation(r'-')
         self.assertEqual(PayloadValidator.INPUT_IS_NOT_JSON, res)
 
     def test_validate_client_id_not_found(self):
-        res = self.validator.get_input_validation("{\"a\":\"b\"}")
+        res = self.validator.get_input_validation(r'{"a":"b"}')
         self.assertEqual(PayloadValidator.CLIENT_ID_IS_NOT_FOUND, res)
 
     def test_validate_client_id_not_str(self):
-        res = self.validator.get_input_validation("{\"c\":0}")
+        res = self.validator.get_input_validation(r'{"c":0}')
         self.assertEqual(PayloadValidator.CLIENT_ID_IS_NOT_STR, res)
 
     def test_validate_client_id_empty(self):
-        res = self.validator.get_input_validation("{\"c\":\"\"}")
+        res = self.validator.get_input_validation(r'{"c":""}')
         self.assertEqual(PayloadValidator.CLIENT_ID_IS_EMPTY, res)
 
     def test_validate_input_is_valid(self):
-        res = self.validator.get_input_validation("{\"c\":\"ada\"}")
+        res = self.validator.get_input_validation(r'{"c":"ada"}')
         self.assertEqual(PayloadValidator.INPUT_IS_VALID, res)
 
     def test_validate_input_is_valid_additional_data_as_string(self):
-        res = self.validator.get_input_validation("{\"c\":\"ada\", \"anything\":\"anything\"}")
+        res = self.validator.get_input_validation(r'{"c":"ada", "anything":"anything"}')
         self.assertEqual(PayloadValidator.INPUT_IS_VALID, res)
 
     def test_validate_input_is_valid_additional_data_as_array(self):
-        res = self.validator.get_input_validation("{\"c\":\"ada\", \"anything\":[]}")
+        res = self.validator.get_input_validation(r'{"c":"ada", "anything":[]}')
         self.assertEqual(PayloadValidator.INPUT_IS_VALID, res)
 
     def test_validate_input_is_valid_additional_data_as_json(self):
-        res = self.validator.get_input_validation("{\"c\":\"ada\", \"anything\":{}}")
+        res = self.validator.get_input_validation(r'{"c":"ada", "anything":{}}')
         self.assertEqual(PayloadValidator.INPUT_IS_VALID, res)
 
 
@@ -53,35 +53,45 @@ class ChannelTests(unittest.TestCase):
     def setUp(self):
         self.channel = Channel()
 
+    def test_update_with_string_not_json(self):
+        res = self.channel.update(r'-', 0.0)
+        self.assertEqual(r'{"error":"invalid input (-)"}', res)
+
+    def test_update_with_json_not_containing_client_id(self):
+        res = self.channel.update(r'{"not_c":"ada"}', 0.0)
+        self.assertEqual(r'{"error":"invalid input ({"not_c":"ada"})"}', res)
+
     def test_update_with_minimum_data(self):
-        res = self.channel.update("{\"c\":\"ada\"}", 0.0)
-        self.assertEqual("[]", res)
+        res = self.channel.update(r'{"c":"ada"}', 0.0)
+        self.assertEqual(r'[]', res)
 
     def test_update_with_additional_data(self):
         # TODO : MAKE IT WORK
         #res = self.channel.update("{\"c\":\"ada\", \"a\":\"\", \"b\":[], \"c\":{}}", 0.0)
-        res = self.channel.update("{\"c\":\"ada\", \"a\":\"\", \"b\":[]}", 0.0)
-        self.assertEqual("[]", res)
+        res = self.channel.update(r'{"c":"ada", "a":"", "b":[]}', 0.0)
+        self.assertEqual(r'[]', res)
 
     def test_two_updates_from_different_clients(self):
-        self.channel.update("{\"c\":\"ada\"}", 0.0)
-        res = self.channel.update("{\"c\":\"joe\"}", 0.0)
-        self.assertEqual("[{\"c\":\"ada\"}]", res)
+        # first client
+        self.channel.update(r'{"c":"ada"}', 0.0)
+        # second client receives data from first client
+        res = self.channel.update(r'{"c":"joe"}', 0.0)
+        self.assertEqual(r'[{"c":"ada"}]', res)
 
     def test_get_all_on_empty_channel(self):
         res = self.channel.get_all()
-        self.assertEqual("[]", res)
+        self.assertEqual(r'[]', res)
 
     def test_get_all_on_not_empty_channel(self):
-        self.channel.update("{\"c\":\"ada\"}", 0.0)
-        self.channel.update("{\"c\":\"joe\"}", 0.0)
-        res = self.channel.get_all()
-        self.assertEqual("[{\"c\":\"ada\"},{\"c\":\"joe\"}]", res)
+        self.channel.update(r'{"c":"ada"}', 0.0) # first client
+        self.channel.update(r'{"c":"joe"}', 0.0) # second client
+        res = self.channel.get_all() # observer
+        self.assertEqual(r'[{"c":"ada"},{"c":"joe"}]', res)
 
     def test_remove_disconnected_client(self):
         # add clients in the channel
-        self.channel.update("{\"c\":\"ada\"}", 0.0)
-        self.channel.update("{\"c\":\"joe\"}", 1.0)
+        self.channel.update(r'{"c":"ada"}', 0.0)
+        self.channel.update(r'{"c":"joe"}', 1.0)
         # remove disconnected clients
         timeout = 5
         current_time = 10
@@ -89,7 +99,7 @@ class ChannelTests(unittest.TestCase):
         self.assertEqual(True, res) # True = some client(s) were disconnected
         # check channel is empty
         res = self.channel.get_all()
-        self.assertEqual("[]", res)
+        self.assertEqual(r'[]', res)
         # try removing disconnected clients again
         current_time = 11
         res = self.channel.remove_disconnected_clients(current_time, timeout)
@@ -102,23 +112,23 @@ class ChannelsTests(unittest.TestCase):
         self.channels = Channels()
 
     def test_channels_update_with_minimum_data(self):
-        res = self.channels.update("test", "{\"c\":\"ada\"}", 0.0)
-        self.assertEqual("[]", res)
+        res = self.channels.update("test", r'{"c":"ada"}', 0.0)
+        self.assertEqual(r'[]', res)
 
     def test_channels_update_with_two_clients(self):
-        self.channels.update("test", "{\"c\":\"ada\"}", 0.0)
-        res = self.channels.update("test", "{\"c\":\"joe\"}", 0.0)
-        self.assertEqual("[{\"c\":\"ada\"}]", res)
+        self.channels.update("test", r'{"c":"ada"}', 0.0)
+        res = self.channels.update("test", r'{"c":"joe"}', 0.0)
+        self.assertEqual(r'[{"c":"ada"}]', res)
 
     def test_channels_get_all_from(self):
-        self.channels.update("test", "{\"c\":\"ada\"}", 0.0)
-        self.channels.update("test", "{\"c\":\"joe\"}", 0.0)
+        self.channels.update("test", r'{"c":"ada"}', 0.0)
+        self.channels.update("test", r'{"c":"joe"}', 0.0)
         res = self.channels.get_all_from("test")
-        self.assertEqual("[{\"c\":\"ada\"},{\"c\":\"joe\"}]", res)
+        self.assertEqual(r'[{"c":"ada"},{"c":"joe"}]', res)
 
     def test_channels_get_all_from_non_existing_channel(self):
         res = self.channels.get_all_from("toto")
-        self.assertEqual("[]", res)
+        self.assertEqual(r'[]', res)
 
 # Home made test framework (because punk)
 def assert_eq(a, b):
