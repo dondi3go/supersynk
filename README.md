@@ -1,6 +1,6 @@
 # Supersynk
 
-Supersynk is punk synchronisation of distributed data
+Supersynk is a toy project for synchronisation of distributed data via HTTP
 
 ## Why supersynk ?
 
@@ -8,7 +8,8 @@ Sypersynk was originaly created to synchronize VR users sharing a common VR envi
 
 The idea was to make something as simple as possible with as few HTTP requests as possible.
 
-HTTP is obviously not the most efficient approach to this problem, but http libraries are available in almost every programming language and the HTTP tooling is strong. 
+HTTP is obviously not the most efficient approach to this problem, but http 
+libraries are available in almost every programming language and the HTTP tooling is strong. 
 
 Far from being perfect, this HTTP solution works and is simple. 
 
@@ -19,12 +20,12 @@ to application level), making this server usable in other contexts.
 
 Each client sends its data to the server, and get the data of other clients in return.
 
-All data are stored in-memory,no database is involved in the process.
-
-Clients connected to the same channel "see" each others. Clients belonging to
-different channels do not interact with each others.
+All data are stored in-memory, no database is involved in the process.
 
 The server can host different channels.
+
+Clients connected to the same channel "see" each others.
+Clients belonging to different channels do not interact with each others.
 
 ## How to use it ?
 
@@ -78,4 +79,11 @@ Or checking this url in a web browser
 ```
 http://127.0.0.1:9999/api/channels/test
 ```
+
+## Unfinished work
+
+* Clients disconnection is not yet handled (lack of free time)
+* Empty channels are not removed (no consequences)
+* Hight frequency polling is not been hanlled (done on another project)
+* No security at all (like API keys)
 
