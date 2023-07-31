@@ -25,6 +25,7 @@ All data are stored in-memory, no database is involved in the process.
 The server can host different channels.
 
 Clients connected to the same channel "see" each others.
+
 Clients belonging to different channels do not interact with each others.
 
 ## How to use it ?
@@ -34,17 +35,21 @@ clients of the channel, and another one for the pure observer clients of the cha
 
 In each use case, clients can share/get data using one and only one HTTP request.
 
+The payload of request and response are not fully defined here, they should be json
+objects containing at least the property "client_id". Any other properties in the 
+json objects should defined and handled by client applications.
+
 ### Endpoint for a participant in the channel
 
 **POST** [ip]:[port]/api/channels/[channel_key]
 
 with a request body like :
 ```
-{"client_id":"ada"}
+{"client_id":"ada" ... }
 ```
 response body could be :
 ```
-[{"client_id":"joe"}]
+[{"client_id":"joe" ...}]
 ```
 
 ### Endpoint for an observer of the channel
@@ -53,7 +58,7 @@ response body could be :
 
 response body could be :
 ```
-[{"client_id":"ada"}, {"client_id":"joe"}]
+[{"client_id":"ada" ... }, {"client_id":"joe" ... }]
 ```
 
 ## Running the server
