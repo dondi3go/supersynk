@@ -1,5 +1,8 @@
+import time
+from threading import Thread, main_thread
 from flask import Flask, request
 from supersynk import Channels, get_current_time
+
 
 app = Flask(__name__)
 channels = Channels()
@@ -49,5 +52,27 @@ def update_one_channel(channel_id):
 #
 #
 #
+def run_disconnection_loop():
+    """ Regularly tell channels to remove their disconnected clients
+    """
+    # Time span without activity before disconnection from a channel (in seconds)
+    timeout = 1
+    # Time span between two calls for disconnection (in seconds)
+    sleep_span = 5
+    while True:
+        current_time = get_current_time()
+        channels.remove_disconnected_clients(current_time, timeout)
+        time.sleep(sleep_span)
+        # Otherwise the loop prevent the server from stopping using (Ctrl + c)
+        if not main_thread().is_alive():
+            break
+
+#
+#
+#
 if __name__ == '__main__':
+    # run disconnection loop
+    other_thread = Thread(target=run_disconnection_loop)
+    other_thread.start()
+    # run flask app
     app.run(port=9999)

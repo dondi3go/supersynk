@@ -87,8 +87,7 @@ http://127.0.0.1:9999/api/channels/test
 
 ## Unfinished work
 
-* Clients disconnection is not yet handled (lack of free time)
 * Empty channels are not removed (no consequences)
-* Hight frequency polling is not been hanlled (done on another project)
+* Hight frequency polling is not been handled (done on another project, but)
 * No security at all (like API keys)
 
