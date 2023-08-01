@@ -8,10 +8,9 @@ Sypersynk was originaly created to synchronize VR users sharing a common VR envi
 
 The idea was to make something as simple as possible with as few HTTP requests as possible.
 
-HTTP is obviously not the most efficient approach to this problem, but http 
-libraries are available in almost every programming language and the HTTP tooling is strong. 
-
-Far from being perfect, this HTTP solution works and is simple. 
+HTTP is obviously not the most efficient approach to this problem, but HTTP 
+libraries are available in almost every programming language and the HTTP tooling 
+is strong.
 
 VR specific syntax has disappeared from the original idea (it has been relocated 
 to application level), making this server usable in other contexts.
@@ -88,6 +87,6 @@ http://127.0.0.1:9999/api/channels/test
 ## Unfinished work
 
 * Empty channels are not removed (no consequences)
-* Hight frequency polling is not been handled (done on another project, but)
+* Hight frequency polling is not handled (done on another project, but)
 * No security at all (like API keys)
 
