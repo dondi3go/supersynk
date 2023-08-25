@@ -125,12 +125,16 @@ would have limitations ?* or you can prefer quick and not that beautyfull fixes 
 heavy rethinking, because you are punk. Well, in fact disorder is punk, but I would prefer
 my animations to be nice and this project not to suffer from too many embarassing issues.
 
-What can be done fast about this disorder ? This is what i did. As the latence can occur
+What can be done fast about this disorder ? This is what I did. As the latence can occur
 on the way between the client and the server, or on the way back, between the server and
 the client, I decided to discard all the requests arriving **late** on the server, or
 the responses arriving **late** on the client. To do that, I used the HTTP request and 
 HTTP response headers to store the emission time, only took into account the messages in 
 an increasing time order, and forget the others.
+
+Why using headers and not the payload of the requests ? Because the payload is for more 
+for application logic, and the HTTP disorder issue is more a protocol issue (HTTP, I like 
+you anyway). 
 
 What do I mean by *forget the others* ? When a message arrives **late** on the server, its 
 content is ignored (I already have a more up-to-date content stored on this server) and 
@@ -138,5 +142,6 @@ an empty reponse is sent (code 204). When a message arrives **late** on the clie
 not lead to any update.
 
 So far, so good, but something has been written about making *something as simple as 
-possible* ? Where is the simplicity, if the client has to handle special headers ? Well
-once again my answer is : this is a punk project.
+possible* ? Where is the simplicity, if the client has to handle special headers ? Well,
+once again, my answer is : this is a punk personnal project. I only solve the problems I
+choose to solve, and I don't even pretend they are chosen with great care.
