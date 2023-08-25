@@ -1,12 +1,12 @@
-# Supersynk
+# supersynk
 
-Supersynk is a toy project for synchronisation of distributed data via HTTP
+Punk synchronisation for cyberspace : the server
 
 ## Why supersynk ?
 
-Sypersynk was originaly created to synchronize VR users sharing a common VR 
+*supersynk* was originaly created to synchronize VR users sharing a common VR 
 environment. The project started during the 2020 lockdown as a way to meet 
-VR aware friends having VR helmets with them and considering video meeting as,
+VR aware friends (having VR helmets at home) considering video meeting as,
 well, not as fun as VR.
 
 The first version of this project was considered (by me) having some embarrasing 
@@ -15,12 +15,12 @@ limitions :
 * there was only one channel
 * the name of the project was not fun enough
 
-The idea is to make something as simple as possible with as few HTTP requests 
+The idea was and is still to make something as simple as possible with as few HTTP requests 
 as possible.
 
 HTTP is obviously not the most efficient approach to solve this problem but HTTP 
 libraries are available in almost every programming language, so writing
-a client for *supersynk* should be easy. Furthermore, HTTP tooling is strong.
+a client for *supersynk* should be quite easy. Furthermore, HTTP tooling is strong.
 
 VR specific syntax has disappeared from the original idea (it has been relocated 
 to application level), making this server now usable in other contexts.
@@ -50,7 +50,7 @@ properties in the *json* objects should be defined and handled by client applica
 
 ### Endpoint for a participant in the channel
 
-**POST** [ip]:[port]/api/channels/[channel_key]
+**POST** http://[ip]:[port]/api/channels/[channel_key]
 
 with a request body like :
 ```
@@ -63,7 +63,7 @@ response body could be :
 
 ### Endpoint for an observer of the channel
 
-**GET** [ip]:[port]/api/channels/[channel_key]
+**GET** http://[ip]:[port]/api/channels/[channel_key]
 
 response body could be :
 ```
@@ -93,13 +93,50 @@ Or checking this url in a web browser
 ```
 http://127.0.0.1:9999/api/channels/test
 ```
+Warning : the disconnection timespan is quite low, you have to be fast between your *curl* command and a 
+refresh of your favorite web browser.  
 
 ## Unfinished work
 
 * Empty channels are not removed (no consequences)
-* High frequency polling is not handled (done on another project, but)
-* No security at all
-    * no API keys (done on other project, but)
+* No security at all :
+    * no API key (done on other project, but)
     * no test on https (done on other project, but)
-    * any client can impersonate any other client 
+    * any client can impersonate any other client
+ 
+## The awfull truth about HTTP 
 
+HTTP is everywhere, HTTP is easy, HTTP brings connectivity to the everyone, it looks
+like the obvious *go to* solution to every problem. 
+
+But something strange starts to occur as soon as you poll your server at a periods
+that are closer and closer to the process time of your requests. If you use HTTP
+for animation, as this project aims to do, you begin to notice small glitches. Some
+vibrations appears, all the more than many clients are connected, or your network is
+overloaded, or your server is fighting with its own resources.
+
+The truth *everybody knows* is : nothing can garanty that HTTP responses are receives in the
+same order requests were emitted. What are the consequences when using HTTP to perform 3D 
+animations ? A client can receive, from time to time, older positions of an object, breaking 
+the fluidity of its movement.
+
+What can be done ? You can questions your choices in life, like *why HTTP, I knew it 
+would have limitations ?* or you can prefer quick and not that beautyfull fixes over 
+heavy rethinking, because you are punk. Well, in fact disorder is punk, but I would prefer
+my animations to be nice and this project not to suffer from too many embarassing issues.
+
+What can be done fast about this disorder ? This is what i did. As the latence can occur
+on the way between the client and the server, or on the way back, between the server and
+the client, I decided to discard all the requests arriving **late** on the server, or
+the responses arriving **late** on the client. To do that, I used the HTTP request and 
+HTTP response headers to store the emission time, only took into account the messages in 
+an increasing time order, and forget the others.
+
+What do I mean by *forget the others* ? When a message arrives **late** on the server, its 
+content is ignored (I already have a more up-to-date content stored on this server) and 
+an empty reponse is sent (code 204). When a message arrives **late** on the client, it does 
+not lead to any update.
+
+So far, so good, but something has been written about making *something as simple as 
+possible* ? Where is the simplicity, if the client has to handle special headers ? Well
+once again my answer is : this is a punk project.
