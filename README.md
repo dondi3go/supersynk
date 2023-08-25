@@ -115,17 +115,17 @@ for animation, as this project aims to do, you begin to notice small glitches. S
 vibrations appears, all the more than many clients are connected, or your network is
 overloaded, or your server is fighting with its own resources.
 
-The truth *everybody knows* is : nothing can garanty that HTTP responses are receives in the
+The truth *everybody knows* is : nothing can garanty that HTTP responses are received in the
 same order requests were emitted. What are the consequences when using HTTP to perform 3D 
 animations ? A client can receive, from time to time, older positions of an object, breaking 
-the fluidity of its movement.
+the fluidity of this object movement.
 
-What can be done ? You can questions your choices in life, like *why HTTP, I knew it 
-would have limitations ?* or you can prefer quick and not that beautyfull fixes over 
-heavy rethinking, because you are punk. Well, in fact disorder is punk, but I would prefer
+What can be done ? You can questions your choices in life, like *why did I chosse HTTP, 
+I knew it would have limitations ?* or you can prefer quick and not that beautyfull fixes over 
+heavy rethinking, because you are punk. Well, in fact disorder is punk but I would prefer
 my animations to be nice and this project not to suffer from too many embarassing issues.
 
-What can be done fast about this disorder ? This is what I did. As the latence can occur
+What can be done fast about this disorder ? This is what I did : As the latence can occur
 on the way between the client and the server, or on the way back, between the server and
 the client, I decided to discard all the requests arriving **late** on the server, or
 the responses arriving **late** on the client. To do that, I used the HTTP request and 
