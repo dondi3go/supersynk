@@ -1,11 +1,13 @@
 import time
 from threading import Thread, main_thread
-from flask import Flask, request
-from supersynk import Channels, get_current_time
+from flask import Flask, request, Response
+from supersynk import Channels, get_current_time, is_late_request, add_response_header
 
 
 app = Flask(__name__)
 channels = Channels()
+version = "0.1"
+
 
 #
 #
@@ -14,7 +16,7 @@ channels = Channels()
 def get_api_details():
     """Details about the API
     """
-    body = "supersynk server"
+    body = "supersynk server " + version
     return body, 200
 
 #
@@ -34,8 +36,16 @@ def get_channel_ids():
 def get_one_channel(channel_id):
     """Get the data of all the clients of one channel
     """
-    body = channels.get_all_from(channel_id)
-    return body, 200
+    # Handle late requests (using request headers)
+    if is_late_request(request.headers):
+        return "", 204
+    # Process request
+    response_body = channels.get_all_from(channel_id)
+    # Prepare response
+    response = Response(response_body, 200)
+    # Handle late responses (using response headers)
+    add_response_header(response.headers)
+    return response
 
 #
 #
@@ -44,10 +54,18 @@ def get_one_channel(channel_id):
 def update_one_channel(channel_id):
     """Update one client in one channel, and get the data of all the other clients
     """
+    # Handle late requests (using request headers)
+    if is_late_request(request.headers) :
+        return "", 204
+    # Process request
     request_body = request.data.decode('utf-8') # request.data is of type 'bytes'
     current_time = get_current_time()
     response_body = channels.update(channel_id, request_body, current_time)
-    return response_body, 200
+    # Prepare response
+    response = Response(response_body, 200)
+    # Handle late responses (using response headers)
+    add_response_header(response.headers)
+    return response
 
 #
 #
@@ -55,16 +73,16 @@ def update_one_channel(channel_id):
 def run_disconnection_loop():
     """ Regularly tell channels to remove their disconnected clients
     """
-    # time span without activity before disconnection from a channel (in seconds)
+    # Time span without activity before disconnection from a channel (in seconds)
     timeout = 1
-    # time span between two calls for disconnection (in seconds)
+    # Time span between two calls to check disconnection (in seconds)
     sleep_span = 5
-    # start disconnection loop
+    # Start disconnection loop
     while True:
         current_time = get_current_time()
         channels.remove_disconnected_clients(current_time, timeout)
         time.sleep(sleep_span)
-        # without this, the loop prevents the server from stopping with Ctrl+C :
+        # Without this, the loop prevents the server from stopping with Ctrl+C :
         if not main_thread().is_alive():
             break
 
@@ -72,8 +90,8 @@ def run_disconnection_loop():
 #
 #
 if __name__ == '__main__':
-    # run disconnection loop
+    # Run disconnection loop
     other_thread = Thread(target=run_disconnection_loop)
     other_thread.start()
     # run flask app (5000 is the default port for flask apps)
-    app.run(host='0.0.0.0',port=5000)
+    app.run(host='0.0.0.0', port=5000)

@@ -2,6 +2,7 @@ import json
 import time
 import threading
 
+
 class PayloadValidator:
     """Validate the payload of the requests made to the server.
     """
@@ -194,8 +195,34 @@ def get_current_time():
     """
     return time.time() - starting_time
 
+# Headers expected in client requests
+CLIENT_ID_KEY = 'Client-Id'
+CLIENT_TIME_KEY = 'Client-Time'
+SERVER_TIME_KEY = 'Server-Time'
+
+# Stored values of client_time
+clients_latest_request = {} # client_id:str > client_time:float
+def is_late_request(headers):
+    """Return True if headers contain 'Client-Id' and 'Client-Time' and
+       Client-Time value is older than a previous stored value
+    """
+    if CLIENT_ID_KEY in headers and CLIENT_TIME_KEY in headers:
+        client_id = headers[CLIENT_ID_KEY]
+        client_time = float(headers[CLIENT_TIME_KEY])
+        if not client_id in clients_latest_request:
+           clients_latest_request[client_id] = 0 
+        if clients_latest_request[client_id] > client_time :
+            return True
+        clients_latest_request[client_id] = client_time
+    return False
+
+def add_response_header(headers):
+    """Add a header named 'Server-Time' with a value of current time (second)
+    """
+    headers[SERVER_TIME_KEY] = "{:.3f}".format(get_current_time())
+
 
 if __name__ == '__main__':
-    print("supersynk 0.0.1 alpha")
+    print("supersynk :")
     print("run 'python supersynk_tests.py' to run the tests")
     print("run 'python supersynk_server.py' to run the server")
