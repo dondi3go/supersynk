@@ -100,11 +100,16 @@ pip install -r requirements.txt
 ```
 
 ## Running the server
-Assuming the python virtual environment is activated :
+
+Assuming the python virtual environment is activated:
 ```
 python supersync_server.py
 ```
 
+If you need to run it in the background and let it run after your console is closed:
+```
+nohup python supersynk_server.py &
+```
 ## Testing the server
 
 Sending data to 'test' channel
