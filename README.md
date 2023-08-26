@@ -84,12 +84,12 @@ Go into *supersynk* folder
 cd supersynk
 ```
 
-Create a python virtual environnement
+Create a python virtual environment
 ```
 python -m venv venv
 ```
 
-Activate the virtual environement
+Activate the virtual environment
 ```
 source venv/bin/activate
 ```
@@ -100,7 +100,7 @@ pip install -r requirements.txt
 ```
 
 ## Running the server
-Assuming the python virtual environement is activated :
+Assuming the python virtual environment is activated :
 ```
 python supersync_server.py
 ```
