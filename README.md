@@ -109,18 +109,18 @@ python supersync_server.py
 
 Sending data to 'test' channel
 ```
-curl -X POST http://127.0.0.1:9999/api/channels/test -H "Content-Type:application/json" -d {\"client_id\":\"ada\"}
-curl -X POST http://127.0.0.1:9999/api/channels/test -H "Content-Type:application/json" -d {\"client_id\":\"joe\"}
+curl -X POST http://127.0.0.1:5000/api/channels/test -H "Content-Type:application/json" -d {\"client_id\":\"ada\"}
+curl -X POST http://127.0.0.1:5000/api/channels/test -H "Content-Type:application/json" -d {\"client_id\":\"joe\"}
 ```
 
 Getting data from 'test' channel
 ```
-curl http://127.0.0.1:9999/api/channels/test
+curl http://127.0.0.1:5000/api/channels/test
 ```
 
 Or checking this url in a web browser
 ```
-http://127.0.0.1:9999/api/channels/test
+http://127.0.0.1:5000/api/channels/test
 ```
 Warning : the disconnection timespan is quite low, you have to be fast between your *curl* command and a 
 refresh of your favorite web browser.  
