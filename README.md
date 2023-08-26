@@ -2,7 +2,7 @@
 
 Punk synchronisation for cyberspace : the server
 
-Interested by a client for this server ? Go check [SUperklub](https://github.com/dondi3go/Superklub)
+Interested by a client for this server ? Go check [Superklub](https://github.com/dondi3go/Superklub)
 
 ## Why supersynk ?
 
