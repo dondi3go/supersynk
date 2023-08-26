@@ -39,6 +39,16 @@ Clients connected to the same channel "see" each others.
 
 Clients belonging to different channels do not interact with each others.
 
+```mermaid
+sequenceDiagram
+    participant Superklub client
+    participant supersynk server
+    
+    Superklub client->>supersynk server: send client data
+    supersynk server->>supersynk server: store client data in memory
+    supersynk server-->>Superklub client: send other clients data
+```
+
 ## How to use it ?
 
 The API is made of two endpoints, one for the clients who share data with the other 
