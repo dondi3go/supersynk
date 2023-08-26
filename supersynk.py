@@ -123,7 +123,7 @@ class Channel:
     def remove_disconnected_clients(self, current_time:float, timeout:float) -> bool :
         """Remove clients whose last update is older than timeout
         """
-        disconnexion_occured = False
+        disconnection_occured = False
         client_ids = list(self.clients_last_update.keys())
         for client_id in client_ids:
             last_update = self.clients_last_update[client_id]
@@ -133,8 +133,15 @@ class Channel:
                     self.clients.pop(client_id, None)
                     self.clients_last_update.pop(client_id, None)
                 # ------------------------------------------------------------
-                disconnexion_occured = True
-        return disconnexion_occured
+                disconnection_occured = True
+        return disconnection_occured
+    
+    def is_empty(self):
+        """Return True if the channel has no clients
+        """
+        if len(self.clients) == 0:
+            return True
+        return False
 
 
 class Channels:
@@ -180,13 +187,22 @@ class Channels:
     def remove_disconnected_clients(self, current_time:float, timeout:float):
         """Remove clients whose latest update time is older than 'timeout'
         """
+        disconnection_occured = False
         for channel in self.channels.values():
-            channel.remove_disconnected_clients(current_time, timeout)
+            if channel.remove_disconnected_clients(current_time, timeout):
+                disconnection_occured = True
+        return disconnection_occured
 
     def remove_empty_channels(self):
-        """TODO
+        """Remove channels containing no clients
         """
-        pass
+        empty_channel_ids = []
+        for channel_id, channel in self.channels.items():
+            if channel.is_empty():
+                empty_channel_ids.append(channel_id)
+        
+        for channel_id in empty_channel_ids:
+            self.channels.pop(channel_id, None)
 
 
 starting_time = time.time()

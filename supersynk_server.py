@@ -72,6 +72,7 @@ def update_one_channel(channel_id):
 #
 def run_disconnection_loop():
     """ Regularly tell channels to remove their disconnected clients
+    Empty channels are also removed
     """
     # Time span without activity before disconnection from a channel (in seconds)
     timeout = 1
@@ -80,7 +81,9 @@ def run_disconnection_loop():
     # Start disconnection loop
     while True:
         current_time = get_current_time()
-        channels.remove_disconnected_clients(current_time, timeout)
+        if channels.remove_disconnected_clients(current_time, timeout):
+            # A disconnection occured : a channel may be empty
+            channels.remove_empty_channels()
         time.sleep(sleep_span)
         # Without this, the loop prevents the server from stopping with Ctrl+C :
         if not main_thread().is_alive():
