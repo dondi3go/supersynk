@@ -161,16 +161,16 @@ I knew it would have limitations ?* or you can prefer quick and not that beautyf
 heavy rethinking, because you are punk. Well, in fact disorder is punk but I would prefer
 my animations to be nice and this project not to suffer from too many embarassing issues.
 
-What can be done fast about this disorder ? This is what I did : As the latence can occur
+What can be done fast about this disorder ? This is what I did : As latence can occur
 on the way between the client and the server, or on the way back, between the server and
 the client, I decided to discard all the requests arriving **late** on the server, or
 the responses arriving **late** on the client. To do that, I used the HTTP request and 
 HTTP response headers to store the emission time, only took into account the messages in 
 an increasing time order, and forget the others.
 
-Why using headers and not the payload of the requests ? Because the payload is for more 
-for application logic, and the HTTP disorder issue is more a protocol issue (HTTP, I like 
-you anyway). 
+Why using headers and not the payload of the requests ? Because the payload, in my mind, is 
+more for application logic, and the HTTP disorder issue is more a protocol issue (HTTP, I 
+like you anyway). 
 
 What do I mean by *forget the others* ? When a message arrives **late** on the server, its 
 content is ignored (I already have a more up-to-date content stored on this server) and 
