@@ -144,11 +144,10 @@ refresh of your favorite web browser.
 
 ## Unfinished work
 
-* Empty channels are not removed (no consequences)
-* No security at all :
+* No special care about security :
     * no API key (done on other project, but)
     * no test on https (done on other project, but)
-    * any client can impersonate any other client
+    * no client authentication
  
 ## The awfull truth about HTTP 
 
@@ -166,10 +165,10 @@ same order requests were emitted. What are the consequences when using HTTP to p
 animations ? A client can receive, from time to time, older positions of an object, breaking 
 the fluidity of this object movement.
 
-What can be done ? You can questions your choices in life, like *why did I chosse HTTP, 
-I knew it would have limitations ?* or you can prefer quick and not that beautyfull fixes over 
+What can be done ? You can questions your choices in life, like *'why did I choose HTTP, 
+I knew it would have limitations ?'* or you can prefer quick and not that beautyfull fixes over 
 heavy rethinking, because you are punk. Well, in fact disorder is punk but I would prefer
-my animations to be nice and this project not to suffer from too many embarassing issues.
+my animations to be nice and this project not to suffer from too many ugly issues.
 
 What can be done fast about this disorder ? This is what I did : As latence can occur
 on the way between the client and the server, or on the way back, between the server and
