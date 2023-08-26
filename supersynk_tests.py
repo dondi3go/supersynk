@@ -130,5 +130,21 @@ class ChannelsTests(unittest.TestCase):
         res = self.channels.get_all_from("toto")
         self.assertEqual(r'[]', res)
 
+    def test_channels_remove_disconnected_clients(self):
+        self.channels.update("test", r'{"client_id":"ada"}', 0.0)
+        self.assertFalse(self.channels.channels["test"].is_empty())
+        self.assertFalse(self.channels.remove_disconnected_clients(4.0, 5.0)) # before timeout
+        self.assertTrue(self.channels.remove_disconnected_clients(10.0, 5.0)) # after timeout
+        self.assertTrue(self.channels.channels["test"].is_empty())
+
+    def test_channels_remove_empty_channels(self):
+        self.channels.update("test", r'{"client_id":"ada"}', 0.0)
+        self.channels.remove_empty_channels()
+        self.assertEqual(1, len(self.channels.channels)) # channel not empty, still exists
+        self.assertTrue(self.channels.remove_disconnected_clients(10.0, 5.0))
+        self.assertEqual(1, len(self.channels.channels)) 
+        self.channels.remove_empty_channels()
+        self.assertEqual(0, len(self.channels.channels)) # channel empty, do not exists
+
 if __name__ == '__main__':
     unittest.main()
