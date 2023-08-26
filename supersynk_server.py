@@ -94,4 +94,4 @@ if __name__ == '__main__':
     other_thread = Thread(target=run_disconnection_loop)
     other_thread.start()
     # run flask app (5000 is the default port for flask apps)
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, threaded=True)
