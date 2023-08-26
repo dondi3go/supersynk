@@ -2,6 +2,8 @@
 
 Punk synchronisation for cyberspace : the server
 
+Interested by a client for this server ? Go check [SUperklub](https://github.com/dondi3go/Superklub)
+
 ## Why supersynk ?
 
 *supersynk* was originaly created to synchronize VR users sharing a common VR 
@@ -101,12 +103,12 @@ pip install -r requirements.txt
 
 ## Running the server
 
-Assuming the python virtual environment is activated:
+Assuming the python virtual environment is activated
 ```
-python supersync_server.py
+python supersynk_server.py
 ```
 
-If you need to run it in the background and let it run after your console is closed:
+If you need to run it in the background and let it run after your console is closed
 ```
 nohup python supersynk_server.py &
 ```
