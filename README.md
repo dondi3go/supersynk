@@ -70,8 +70,37 @@ response body could be :
 [{"client_id":"ada" ... }, {"client_id":"joe" ... }]
 ```
 
-## Running the server
+## Installing the server
 
+Assuming *git*, *python* and *pip* are installed :
+
+Clone the *supersynk* repository
+```
+git clone https://github.com/dondi3go/supersynk.git
+```
+
+Go into *supersynk* folder
+```
+cd supersynk
+```
+
+Create a python virtual environnement
+```
+python -m venv venv
+```
+
+Activate the virtual environement
+```
+source venv/bin/activate
+```
+
+Install *supersynk* dependancies
+```
+pip install -r requirements.txt
+```
+
+## Running the server
+Assuming the python virtual environement is activated :
 ```
 python supersync_server.py
 ```
